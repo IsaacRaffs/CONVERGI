@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #Core App
     'core',
+    #Import-export -> add botões para importar e exportar
+    'import_export',
 ]
 
 MIDDLEWARE = [
