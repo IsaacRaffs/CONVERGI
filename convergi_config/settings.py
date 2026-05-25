@@ -29,6 +29,11 @@ INSTALLED_APPS = [
     'core',
     #Import-export -> add botões para importar e exportar
     'import_export',
+    # forms pro user do crispy usando bootstrap
+    'crispy_forms',
+    'crispy_bootstrap4',
+    # app user pra fazer o login e o signup
+    'user',
 ]
 
 MIDDLEWARE = [
@@ -111,3 +116,17 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# MEDIA
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# redirect and login
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+
+X_FRAME_OPTIONS = "SAMEORIGIN"              # allows you to use modals insated of popups
+SILENCED_SYSTEM_CHECKS = ["security.W019"]  # ignores redundant warning messages
+
+# crispy template pack
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
