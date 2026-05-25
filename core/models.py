@@ -1,7 +1,7 @@
 from datetime import date
 from django.db import models
 
-
+# Classe empresa
 class Empresa(models.Model):
     nome = models.CharField()
     inicio = models.CharField()
@@ -15,7 +15,10 @@ class Empresa(models.Model):
         return self.nome
 
 
+# Classe Contrato 
 class Contrato(models.Model):
+    
+    
     TIPO_CHOICES = [
         ("CONTRATO", "Contrato"),
         ("CONVENIO", "Convênio"),
