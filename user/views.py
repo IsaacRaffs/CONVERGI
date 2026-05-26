@@ -49,13 +49,21 @@ def gestao_usuarios(request):
 
         target = get_object_or_404(User, pk=user_id, is_staff=False)
         if action == 'aprovar':
-            target.is_active = True
-            target.save()
-            messages.success(request, f'Usuário "{target.username}" aprovado com sucesso.')
+            if target.is_active:
+                messages.error(request, f'Usuário "{target.username}" já está aprovado.')
+            else:
+                target.is_active = True
+                target.save()
+                messages.success(request, f'Usuário "{target.username}" aprovado com sucesso.')
         elif action == 'revogar':
-            target.is_active = False
-            target.save()
-            messages.success(request, f'Acesso de "{target.username}" revogado.')
+            if not target.is_active:
+                messages.error(request, f'Acesso de "{target.username}" já está revogado.')
+            else:
+                target.is_active = False
+                target.save()
+                messages.success(request, f'Acesso de "{target.username}" revogado.')
+        else:
+            messages.error(request, 'Ação inválida.')
         return redirect('gestao_usuarios')
 
     pendentes = User.objects.filter(is_active=False, is_staff=False).order_by('date_joined')
