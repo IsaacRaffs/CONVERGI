@@ -1,0 +1,420 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CONVERGI{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <style>
+        /* ── Design Tokens ────────────────────────────────── */
+        :root {
+            --c-primary:     #063C73;
+            --c-primary-d:   #042D57;
+            --c-secondary:   #0B5FA5;
+            --c-accent:      #1E88E5;
+            --c-bg:          #F0F4F8;
+            --c-surface:     #FFFFFF;
+            --c-border:      #E2E8F0;
+            --c-text:        #1A2332;
+            --c-muted:       #64748B;
+            --c-success:     #16A34A;
+            --c-warning:     #D97706;
+            --c-danger:      #DC2626;
+            --c-info:        #0284C7;
+            --r-sm:          6px;
+            --r-md:          10px;
+            --r-lg:          16px;
+            --shadow-sm:     0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+            --shadow-md:     0 4px 14px rgba(0,0,0,.09);
+            --shadow-lg:     0 10px 32px rgba(0,0,0,.11);
+            --font:          'Inter', system-ui, sans-serif;
+        }
+
+        /* ── Base ─────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: var(--font);
+            background: var(--c-bg);
+            color: var(--c-text);
+            font-size: .9375rem;
+            line-height: 1.65;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main { flex: 1; }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font);
+            font-weight: 700;
+            letter-spacing: -.3px;
+            color: var(--c-text);
+        }
+
+        /* ── Navbar ──────────────────────────────────────── */
+        .navbar {
+            background: var(--c-primary) !important;
+            padding: .8rem 0;
+            border-bottom: 1px solid rgba(255,255,255,.07);
+            box-shadow: 0 2px 8px rgba(0,0,0,.15);
+        }
+
+        .navbar-brand {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -.4px;
+            color: #fff !important;
+        }
+
+        .brand-icon {
+            width: 30px;
+            height: 30px;
+            background: rgba(255,255,255,.15);
+            border-radius: var(--r-sm);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .78rem;
+            margin-right: .5rem;
+        }
+
+        .navbar .nav-link {
+            color: rgba(255,255,255,.7) !important;
+            font-size: .85rem;
+            font-weight: 500;
+            padding: .38rem .8rem !important;
+            border-radius: var(--r-sm);
+            transition: background .15s, color .15s;
+        }
+
+        .navbar .nav-link:hover,
+        .navbar .nav-link.active {
+            color: #fff !important;
+            background: rgba(255,255,255,.13);
+        }
+
+        .navbar .nav-link i {
+            opacity: .65;
+            font-size: .78rem;
+            margin-right: .3rem;
+        }
+
+        /* ── Cards ───────────────────────────────────────── */
+        .card {
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-md);
+            box-shadow: var(--shadow-sm);
+            background: var(--c-surface);
+        }
+
+        .card-lift {
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .card-lift:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* ── Metric Cards ────────────────────────────────── */
+        .metric-card {
+            border-radius: var(--r-md);
+            padding: 1.25rem 1.5rem;
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 1.1rem;
+        }
+
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--r-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+
+        .metric-label {
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .65px;
+            text-transform: uppercase;
+            color: var(--c-muted);
+            margin-bottom: .15rem;
+        }
+
+        .metric-value {
+            font-size: 1.85rem;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+
+        .metric-sub {
+            font-size: .78rem;
+            color: var(--c-muted);
+            margin-top: .2rem;
+        }
+
+        /* ── Badges ──────────────────────────────────────── */
+        .badge {
+            font-family: var(--font);
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .2px;
+            padding: .3em .65em;
+            border-radius: 4px;
+        }
+
+        .badge-alto     { background: #FEE2E2; color: #991B1B; }
+        .badge-medio    { background: #FEF3C7; color: #92400E; }
+        .badge-baixo    { background: #D1FAE5; color: #065F46; }
+        .badge-ativo    { background: #D1FAE5; color: #065F46; }
+        .badge-encerrado{ background: #F1F5F9; color: #475569; }
+        .badge-cancelado{ background: #FEE2E2; color: #7F1D1D; }
+
+        /* ── Tables ──────────────────────────────────────── */
+        .table-convergi {
+            font-size: .875rem;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table-convergi thead th {
+            background: #F8FAFC;
+            color: var(--c-primary);
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .55px;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--c-border);
+            padding: .85rem 1rem;
+            white-space: nowrap;
+        }
+
+        .table-convergi tbody td {
+            padding: .85rem 1rem;
+            vertical-align: middle;
+            border-color: #F1F5F9;
+        }
+
+        .table-convergi tbody tr:hover td {
+            background: #F8FAFC;
+        }
+
+        /* ── Buttons ─────────────────────────────────────── */
+        .btn-convergi {
+            background: var(--c-secondary);
+            color: #fff;
+            border: none;
+            font-family: var(--font);
+            font-weight: 500;
+            font-size: .83rem;
+            border-radius: var(--r-sm);
+            padding: .45rem 1.1rem;
+            transition: background .15s, box-shadow .15s;
+        }
+        .btn-convergi:hover {
+            background: var(--c-primary);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(6,60,115,.25);
+        }
+
+        .btn-outline-convergi {
+            background: transparent;
+            color: var(--c-primary);
+            border: 1.5px solid var(--c-primary);
+            font-family: var(--font);
+            font-weight: 500;
+            font-size: .83rem;
+            border-radius: var(--r-sm);
+            padding: .45rem 1.1rem;
+            transition: background .15s, color .15s;
+        }
+        .btn-outline-convergi:hover {
+            background: var(--c-primary);
+            color: #fff;
+        }
+
+        /* ── Section Title ────────────────────────────────── */
+        .section-title {
+            font-size: .9rem;
+            font-weight: 700;
+            color: var(--c-primary);
+        }
+
+        /* ── Search ──────────────────────────────────────── */
+        .search-input {
+            font-family: var(--font);
+            font-size: .875rem;
+            border: 1.5px solid var(--c-border);
+            border-radius: var(--r-sm);
+            padding: .45rem .9rem;
+            background: var(--c-surface);
+            color: var(--c-text);
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: var(--c-accent);
+            box-shadow: 0 0 0 3px rgba(30,136,229,.12);
+        }
+
+        /* ── Pagination ──────────────────────────────────── */
+        .pagination .page-link {
+            font-family: var(--font);
+            font-size: .83rem;
+            font-weight: 500;
+            color: var(--c-primary);
+            border-color: var(--c-border);
+        }
+        .pagination .page-item.active .page-link {
+            background: var(--c-primary);
+            border-color: var(--c-primary);
+        }
+
+        /* ── Icon Box ────────────────────────────────────── */
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--r-md);
+            background: #EFF6FF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--c-secondary);
+            margin-bottom: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        /* ── Alert Banner ─────────────────────────────────── */
+        .alert-banner {
+            background: #FFF7ED;
+            border: 1px solid #FED7AA;
+            border-radius: var(--r-md);
+            padding: .75rem 1rem;
+            font-size: .85rem;
+            color: #9A3412;
+        }
+
+        /* ── Footer ──────────────────────────────────────── */
+        footer {
+            background: var(--c-primary);
+            color: rgba(255,255,255,.5);
+            font-size: .8rem;
+            padding: 1.1rem 0;
+            text-align: center;
+            margin-top: auto;
+        }
+        footer a { color: rgba(255,255,255,.7); text-decoration: none; }
+        footer a:hover { color: #fff; }
+
+        {% block extra_styles %}{% endblock %}
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid px-4 px-lg-5">
+
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+            <span class="brand-icon"><i class="fa-solid fa-chart-pie"></i></span>
+            CONVERGI
+        </a>
+
+        <button class="navbar-toggler border-0" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav gap-1 align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+                       href="{% url 'home' %}">
+                        <i class="fa-solid fa-house"></i>Início
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                       href="{% url 'dashboard' %}">
+                        <i class="fa-solid fa-chart-line"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'empresas' or request.resolver_match.url_name == 'search' %}active{% endif %}"
+                       href="{% url 'empresas' %}">
+                        <i class="fa-solid fa-building"></i>Empresas
+                    </a>
+                </li>
+
+                {% if user.is_authenticated %}
+                <li class="nav-item ms-2">
+                    <span class="nav-link" style="opacity:.6;cursor:default;font-size:.8rem;">
+                        <i class="fa-solid fa-circle-user"></i>{{ user.username }}
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}"
+                       style="color:rgba(255,255,255,.55)!important;">
+                        <i class="fa-solid fa-right-from-bracket"></i>Sair
+                    </a>
+                </li>
+                {% else %}
+                <li class="nav-item ms-2">
+                    <a class="nav-link" href="{% url 'register' %}">
+                        <i class="fa-solid fa-user-plus"></i>Cadastrar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'login' %}"
+                       class="btn btn-sm ms-1"
+                       style="background:rgba(255,255,255,.15);color:#fff;border-radius:var(--r-sm);font-size:.83rem;font-weight:600;padding:.38rem 1rem;border:1px solid rgba(255,255,255,.25);transition:background .15s;"
+                       onmouseover="this.style.background='rgba(255,255,255,.25)'"
+                       onmouseout="this.style.background='rgba(255,255,255,.15)'">
+                        <i class="fa-solid fa-right-to-bracket me-1"></i>Entrar
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+
+    </div>
+</nav>
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<footer>
+    <div class="container-fluid px-4 px-lg-5">
+        &copy; {% now "Y" %} CONVERGI &mdash; UESPI/CTU &nbsp;&middot;&nbsp;
+        <a href="{% url 'dashboard' %}">Dashboard</a> &nbsp;&middot;&nbsp;
+        <a href="{% url 'empresas' %}">Empresas</a>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_scripts %}{% endblock %}
+
+</body>
+</html>

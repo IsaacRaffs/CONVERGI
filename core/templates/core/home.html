@@ -1,0 +1,325 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}CONVERGI — Quem Somos{% endblock %}
+
+{% block extra_styles %}
+    .hero {
+        background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-secondary) 100%);
+        color: #fff;
+        border-radius: var(--r-lg);
+        padding: 4rem 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .hero::after {
+        content: '';
+        position: absolute;
+        right: -60px;
+        top: -60px;
+        width: 260px;
+        height: 260px;
+        background: rgba(255,255,255,.05);
+        border-radius: 50%;
+    }
+    .hero::before {
+        content: '';
+        position: absolute;
+        right: 80px;
+        bottom: -80px;
+        width: 180px;
+        height: 180px;
+        background: rgba(255,255,255,.04);
+        border-radius: 50%;
+    }
+
+    .value-card .icon-box { transition: background .2s, color .2s; }
+    .value-card:hover .icon-box {
+        background: var(--c-primary);
+        color: #fff;
+    }
+
+    .team-card img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border: 4px solid #fff;
+        box-shadow: var(--shadow-md);
+    }
+
+    .team-card .social-links a {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #EFF6FF;
+        color: var(--c-secondary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .75rem;
+        transition: background .15s, color .15s;
+        text-decoration: none;
+    }
+    .team-card .social-links a:hover {
+        background: var(--c-primary);
+        color: #fff;
+    }
+
+    .about-section {
+        background: linear-gradient(135deg, #EFF6FF 0%, #F0F4F8 100%);
+        border: 1px solid #DBEAFE;
+        border-radius: var(--r-lg);
+        padding: 3rem;
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+        margin-bottom: 1rem;
+    }
+    .feature-item .fi-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--c-primary);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .65rem;
+        flex-shrink: 0;
+        margin-top: .15rem;
+    }
+    .feature-item p { margin: 0; font-size: .9rem; color: var(--c-muted); }
+    .feature-item strong { color: var(--c-text); }
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4 px-lg-5 py-5">
+
+    <!-- Hero -->
+    <div class="hero shadow-lg mb-5">
+        <div class="row align-items-center position-relative" style="z-index:1">
+            <div class="col-lg-7">
+                <span style="font-size:.78rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;opacity:.7">
+                    Plataforma de Gestão
+                </span>
+                <h1 class="fw-bold mt-2 mb-3" style="font-size:2.4rem;letter-spacing:-.5px;color:#fff">
+                    Controle total dos seus<br>convênios e contratos
+                </h1>
+                <p style="opacity:.85;font-size:1rem;max-width:520px;line-height:1.7">
+                    A CONVERGI centraliza o monitoramento de contratos e convênios da UESPI,
+                    oferecendo alertas automáticos de prazo e dashboards em tempo real —
+                    muito além de uma planilha.
+                </p>
+                <div class="d-flex gap-3 mt-4">
+                    <a href="{% url 'dashboard' %}" class="btn btn-light fw-600"
+                       style="border-radius:var(--r-sm);font-size:.88rem;padding:.55rem 1.4rem;color:var(--c-primary);font-weight:600">
+                        <i class="fa-solid fa-chart-line me-2"></i>Acessar Dashboard
+                    </a>
+                    <a href="{% url 'empresas' %}" class="btn"
+                       style="border-radius:var(--r-sm);font-size:.88rem;padding:.55rem 1.4rem;color:#fff;font-weight:500;border:1.5px solid rgba(255,255,255,.4)">
+                        Ver Empresas
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 text-center d-none d-lg-block">
+                <i class="fa-solid fa-file-contract"
+                   style="font-size:140px;opacity:.12;color:#fff"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Missão / Visão / Valores -->
+    <div class="row g-4 mb-5">
+
+        <div class="col-md-4">
+            <div class="card card-lift value-card h-100 p-4">
+                <div class="icon-box">
+                    <i class="fa-solid fa-bullseye"></i>
+                </div>
+                <h5 class="fw-700 mb-2" style="color:var(--c-primary)">Nossa Missão</h5>
+                <p class="text-muted mb-0" style="font-size:.9rem">
+                    Promover uma gestão mais eficiente, transparente e organizada
+                    através de soluções tecnológicas modernas e acessíveis.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card card-lift value-card h-100 p-4">
+                <div class="icon-box">
+                    <i class="fa-solid fa-eye"></i>
+                </div>
+                <h5 class="fw-700 mb-2" style="color:var(--c-primary)">Nossa Visão</h5>
+                <p class="text-muted mb-0" style="font-size:.9rem">
+                    Ser referência em soluções de monitoramento contratual,
+                    auxiliando instituições na tomada de decisões estratégicas.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card card-lift value-card h-100 p-4">
+                <div class="icon-box">
+                    <i class="fa-solid fa-handshake"></i>
+                </div>
+                <h5 class="fw-700 mb-2" style="color:var(--c-primary)">Nossos Valores</h5>
+                <p class="text-muted mb-0" style="font-size:.9rem">
+                    Transparência, inovação, responsabilidade e compromisso
+                    com a qualidade dos processos e das informações.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Sobre a Plataforma -->
+    <div class="about-section mb-5">
+        <div class="row align-items-center g-4">
+
+            <div class="col-lg-6">
+                <span style="font-size:.72rem;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--c-accent)">
+                    Sobre a Plataforma
+                </span>
+                <h2 class="fw-bold mt-2 mb-3" style="font-size:1.6rem">
+                    Por que a CONVERGI?
+                </h2>
+                <p class="text-muted" style="font-size:.92rem">
+                    Desenvolvida para centralizar informações importantes sobre contratos e convênios
+                    da UESPI, substituindo planilhas estáticas por um sistema dinâmico com visibilidade
+                    total do portfólio.
+                </p>
+
+                <div class="mt-3">
+                    <div class="feature-item">
+                        <span class="fi-icon"><i class="fa-solid fa-check"></i></span>
+                        <p><strong>Alertas automáticos</strong> — notificações de contratos vencendo em 30 dias</p>
+                    </div>
+                    <div class="feature-item">
+                        <span class="fi-icon"><i class="fa-solid fa-check"></i></span>
+                        <p><strong>Classificação de risco</strong> — Alto, Médio e Baixo calculados automaticamente</p>
+                    </div>
+                    <div class="feature-item">
+                        <span class="fi-icon"><i class="fa-solid fa-check"></i></span>
+                        <p><strong>Dashboard em tempo real</strong> — métricas consolidadas de todo o portfólio</p>
+                    </div>
+                    <div class="feature-item">
+                        <span class="fi-icon"><i class="fa-solid fa-check"></i></span>
+                        <p><strong>Importação em lote</strong> — migre dados de planilhas Excel com um clique</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="card p-3 text-center">
+                            <div style="font-size:2rem;font-weight:800;color:var(--c-primary)">100%</div>
+                            <div style="font-size:.78rem;color:var(--c-muted);font-weight:500">Web — acesso em qualquer lugar</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card p-3 text-center">
+                            <div style="font-size:2rem;font-weight:800;color:var(--c-success)">0</div>
+                            <div style="font-size:.78rem;color:var(--c-muted);font-weight:500">Planilhas manuais necessárias</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card p-3 text-center">
+                            <div style="font-size:2rem;font-weight:800;color:var(--c-warning)">30d</div>
+                            <div style="font-size:.78rem;color:var(--c-muted);font-weight:500">Antecedência nos alertas de prazo</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card p-3 text-center">
+                            <div style="font-size:2rem;font-weight:800;color:var(--c-danger)">3</div>
+                            <div style="font-size:.78rem;color:var(--c-muted);font-weight:500">Níveis de risco monitorados</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Time -->
+    <div class="mb-2 text-center">
+        <span style="font-size:.72rem;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--c-accent)">
+            Nossa Equipe
+        </span>
+        <h2 class="fw-bold mt-1" style="font-size:1.6rem">Quem fez acontecer</h2>
+        <p class="text-muted" style="font-size:.92rem">
+            CONVERGI é um projeto integralmente desenvolvido por alunos da UESPI/CTU.
+        </p>
+    </div>
+
+    <div class="row g-4 justify-content-center mb-2">
+
+        <div class="col-6 col-md-3">
+            <div class="card card-lift team-card text-center p-4">
+                <div class="d-flex justify-content-center mb-3">
+                    <img src="{% static 'media/2.jpg' %}" class="rounded-circle" alt="Erik Freitas">
+                </div>
+                <h6 class="fw-bold mb-0" style="font-size:.9rem">Erik Freitas</h6>
+                <small class="text-muted">Tech Lead &amp; Arquitetura</small>
+                <div class="social-links d-flex justify-content-center gap-1 mt-3">
+                    <a href="#"><i class="bi bi-linkedin"></i></a>
+                    <a href="#"><i class="bi bi-github"></i></a>
+                    <a href="#"><i class="bi bi-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card card-lift team-card text-center p-4">
+                <div class="d-flex justify-content-center mb-3">
+                    <img src="{% static 'media/1.jpg' %}" class="rounded-circle" alt="Francisco Guilherme">
+                </div>
+                <h6 class="fw-bold mb-0" style="font-size:.9rem">Francisco Guilherme</h6>
+                <small class="text-muted">UX Design &amp; Integrações</small>
+                <div class="social-links d-flex justify-content-center gap-1 mt-3">
+                    <a href="#"><i class="bi bi-linkedin"></i></a>
+                    <a href="#"><i class="bi bi-github"></i></a>
+                    <a href="#"><i class="bi bi-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card card-lift team-card text-center p-4">
+                <div class="d-flex justify-content-center mb-3">
+                    <img src="{% static 'media/4.jpg' %}" class="rounded-circle" alt="Geovanna Meneses">
+                </div>
+                <h6 class="fw-bold mb-0" style="font-size:.9rem">Geovanna Meneses</h6>
+                <small class="text-muted">Backend dev &amp; QA</small>
+                <div class="social-links d-flex justify-content-center gap-1 mt-3">
+                    <a href="#"><i class="bi bi-linkedin"></i></a>
+                    <a href="#"><i class="bi bi-github"></i></a>
+                    <a href="#"><i class="bi bi-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card card-lift team-card text-center p-4">
+                <div class="d-flex justify-content-center mb-3">
+                    <img src="{% static 'media/isaac.jpg' %}" class="rounded-circle" alt="Isaac Rafael">
+                </div>
+                <h6 class="fw-bold mb-0" style="font-size:.9rem">Isaac Rafael</h6>
+                <small class="text-muted">Líder &amp; Fullstack/UI</small>
+                <div class="social-links d-flex justify-content-center gap-1 mt-3">
+                    <a href="#"><i class="bi bi-linkedin"></i></a>
+                    <a href="#"><i class="bi bi-github"></i></a>
+                    <a href="#"><i class="bi bi-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

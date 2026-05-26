@@ -1,0 +1,179 @@
+{% extends "core/base.html" %}
+
+{% block title %}CONVERGI — Empresas{% endblock %}
+
+{% block extra_styles %}
+    .page-header {
+        background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-secondary) 100%);
+        padding: 1.75rem 0;
+        margin-bottom: 2rem;
+    }
+    .page-header h4 { color: #fff; font-size: 1.25rem; margin: 0; }
+    .page-header p  { color: rgba(255,255,255,.65); font-size: .83rem; margin: .2rem 0 0; }
+
+    .empresa-card {
+        border-radius: var(--r-md);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .empresa-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .empresa-card .card-header-accent {
+        height: 4px;
+        background: linear-gradient(90deg, var(--c-primary), var(--c-accent));
+        border-radius: var(--r-md) var(--r-md) 0 0;
+    }
+
+    .empresa-info-row {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        font-size: .85rem;
+        color: var(--c-muted);
+        margin-bottom: .45rem;
+    }
+    .empresa-info-row:last-child { margin-bottom: 0; }
+    .empresa-info-row .info-icon {
+        width: 22px;
+        text-align: center;
+        flex-shrink: 0;
+        font-size: .8rem;
+    }
+    .empresa-info-row strong { color: var(--c-text); font-weight: 500; }
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container-fluid px-4 px-lg-5">
+        <div class="row align-items-center g-3">
+            <div class="col">
+                <h4><i class="fa-solid fa-building me-2" style="opacity:.8"></i>Empresas Cadastradas</h4>
+                <p>Parceiros com contratos e convênios ativos na UESPI</p>
+            </div>
+            <div class="col-auto">
+                <form action="{% url 'search' %}" method="get" class="d-flex gap-2">
+                    <input class="search-input"
+                           type="search"
+                           name="search"
+                           placeholder="Buscar empresa..."
+                           value="{{ request.GET.search }}"
+                           style="width:240px">
+                    <button class="btn-convergi btn" type="submit">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid px-4 px-lg-5">
+
+    {% if request.GET.search %}
+    <div class="d-flex align-items-center gap-2 mb-3" style="font-size:.875rem;color:var(--c-muted)">
+        <i class="fa-solid fa-filter" style="font-size:.8rem"></i>
+        Resultados para: <strong style="color:var(--c-text)">"{{ request.GET.search }}"</strong>
+        <a href="{% url 'empresas' %}" style="font-size:.8rem;color:var(--c-danger);text-decoration:none;margin-left:.25rem">
+            <i class="fa-solid fa-xmark me-1"></i>Limpar
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Cards Grid -->
+    <div class="row g-4 mb-4">
+        {% for empresa in empresas %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card empresa-card h-100">
+                <div class="card-header-accent"></div>
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3 text-truncate" style="color:var(--c-primary);font-size:.95rem"
+                        title="{{ empresa.nome }}">
+                        {{ empresa.nome }}
+                    </h6>
+                    {% if empresa.nome_fantasia %}
+                    <div class="empresa-info-row" style="margin-top:-.5rem;margin-bottom:.6rem">
+                        <span class="info-icon"><i class="fa-solid fa-tag"></i></span>
+                        <span>{{ empresa.nome_fantasia }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="empresa-info-row">
+                        <span class="info-icon"><i class="fa-regular fa-calendar-check" style="color:var(--c-success)"></i></span>
+                        <span><strong>Início:</strong> {{ empresa.inicio }}</span>
+                    </div>
+                    <div class="empresa-info-row">
+                        <span class="info-icon"><i class="fa-regular fa-calendar-xmark" style="color:var(--c-danger)"></i></span>
+                        <span><strong>Término:</strong> {{ empresa.termino }}</span>
+                    </div>
+                    <div class="empresa-info-row">
+                        <span class="info-icon"><i class="fa-solid fa-location-dot" style="color:var(--c-accent)"></i></span>
+                        <span><strong>Cidade:</strong> {{ empresa.cidade }}</span>
+                    </div>
+                    {% if empresa.cnpj %}
+                    <div class="empresa-info-row">
+                        <span class="info-icon"><i class="fa-solid fa-id-card" style="color:var(--c-muted)"></i></span>
+                        <span><strong>CNPJ:</strong> {{ empresa.cnpj }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="card text-center py-5">
+                <i class="fa-solid fa-inbox fa-3x mb-3" style="color:var(--c-border);display:block"></i>
+                <p class="text-muted mb-0">
+                    {% if request.GET.search %}
+                        Nenhuma empresa encontrada para "<strong>{{ request.GET.search }}</strong>".
+                    {% else %}
+                        Nenhuma empresa cadastrada ainda.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Paginação -->
+    {% if page_obj.has_other_pages %}
+    <div class="d-flex justify-content-center align-items-center gap-2 mb-5" style="font-size:.83rem;color:var(--c-muted)">
+        <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        <nav>
+            <ul class="pagination mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                        <i class="fa-solid fa-chevron-left" style="font-size:.7rem"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fa-solid fa-chevron-left" style="font-size:.7rem"></i></span>
+                </li>
+                {% endif %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                        <i class="fa-solid fa-chevron-right" style="font-size:.7rem"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fa-solid fa-chevron-right" style="font-size:.7rem"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

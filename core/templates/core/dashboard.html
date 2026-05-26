@@ -1,0 +1,344 @@
+{% extends "core/base.html" %}
+
+{% block title %}CONVERGI — Dashboard{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block extra_styles %}
+    .page-header {
+        background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-secondary) 100%);
+        padding: 1.75rem 0;
+        margin-bottom: 2rem;
+    }
+    .page-header h4 { color: #fff; font-size: 1.25rem; margin: 0; }
+    .page-header p  { color: rgba(255,255,255,.65); font-size: .83rem; margin: .2rem 0 0; }
+
+    .metric-card.danger-card {
+        background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+        border-color: transparent;
+    }
+    .metric-card.danger-card .metric-label,
+    .metric-card.danger-card .metric-value,
+    .metric-card.danger-card .metric-sub { color: #fff; }
+    .metric-card.danger-card .metric-icon {
+        background: rgba(255,255,255,.18);
+        color: #fff;
+    }
+
+    .chart-container { position: relative; height: 260px; }
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container-fluid px-4 px-lg-5 d-flex align-items-center justify-content-between">
+        <div>
+            <h4><i class="fa-solid fa-chart-line me-2" style="opacity:.8"></i>Dashboard de Contratos</h4>
+            <p>Visão consolidada do portfólio de convênios e contratos</p>
+        </div>
+        <a href="/admin/core/contrato/add/" class="btn-convergi btn"
+           style="font-size:.83rem">
+            <i class="fa-solid fa-plus me-1"></i>Novo Contrato
+        </a>
+    </div>
+</div>
+
+<div class="container-fluid px-4 px-lg-5">
+
+    <!-- ── Metric Cards ──────────────────────────────────────── -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-sm-6 col-xl">
+            <div class="metric-card">
+                <div class="metric-icon" style="background:#EFF6FF;color:var(--c-primary)">
+                    <i class="fa-solid fa-file-contract"></i>
+                </div>
+                <div>
+                    <div class="metric-label">Total</div>
+                    <div class="metric-value" style="color:var(--c-primary)">{{ total_contratos }}</div>
+                    <div class="metric-sub">Contratos e convênios</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl">
+            <div class="metric-card">
+                <div class="metric-icon" style="background:#DCFCE7;color:var(--c-success)">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                    <div class="metric-label">Ativos</div>
+                    <div class="metric-value" style="color:var(--c-success)">{{ contratos_ativos }}</div>
+                    <div class="metric-sub">Em execução regular</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl">
+            <div class="metric-card">
+                <div class="metric-icon" style="background:#FEF3C7;color:var(--c-warning)">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <div>
+                    <div class="metric-label">Vencendo em 30d</div>
+                    <div class="metric-value" style="color:var(--c-warning)">{{ contratos_vencendo_30 }}</div>
+                    <div class="metric-sub">Requerem atenção</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl">
+            <div class="metric-card">
+                <div class="metric-icon" style="background:#FEE2E2;color:#DC2626">
+                    <i class="fa-solid fa-calendar-xmark"></i>
+                </div>
+                <div>
+                    <div class="metric-label">Vencidos</div>
+                    <div class="metric-value" style="color:#DC2626">{{ contratos_vencidos }}</div>
+                    <div class="metric-sub">Prazos expirados</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl">
+            <div class="metric-card danger-card">
+                <div class="metric-icon">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <div class="metric-label">Risco Alto</div>
+                    <div class="metric-value">{{ risco_alto }}</div>
+                    <div class="metric-sub">Ação imediata</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── Alertas Críticos ──────────────────────────────────── -->
+    <div class="card mb-4">
+        <div class="card-body p-0">
+            <div class="d-flex align-items-center justify-content-between px-4 pt-4 pb-3"
+                 style="border-bottom:1px solid var(--c-border)">
+                <span class="section-title">
+                    <i class="fa-solid fa-bell title-icon" style="color:var(--c-danger)"></i>
+                    Alertas Críticos
+                    {% if alertas_criticos %}
+                    <span class="badge badge-alto ms-1">{{ alertas_criticos|length }}</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-convergi mb-0">
+                    <thead>
+                        <tr>
+                            <th>Contrato</th>
+                            <th>Fornecedor</th>
+                            <th>Responsável</th>
+                            <th>Vencimento</th>
+                            <th>Dias Restantes</th>
+                            <th>Risco</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contrato in alertas_criticos %}
+                        <tr>
+                            <td class="fw-600" style="font-weight:600">{{ contrato.numero }}</td>
+                            <td>{{ contrato.fornecedor }}</td>
+                            <td>{{ contrato.responsavel }}</td>
+                            <td>{{ contrato.data_fim|date:"d/m/Y" }}</td>
+                            <td>
+                                {% if contrato.dias_para_vencer < 0 %}
+                                    <span style="color:var(--c-danger);font-weight:600;font-size:.83rem">
+                                        Vencido há {{ contrato.dias_para_vencer|slice:"1:" }} dias
+                                    </span>
+                                {% else %}
+                                    <span style="font-weight:600">{{ contrato.dias_para_vencer }}d</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if contrato.nivel_risco == "Alto" %}
+                                    <span class="badge badge-alto">Alto</span>
+                                {% elif contrato.nivel_risco == "Médio" %}
+                                    <span class="badge badge-medio">Médio</span>
+                                {% else %}
+                                    <span class="badge badge-baixo">Baixo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="/admin/core/contrato/{{ contrato.pk }}/change/"
+                                   class="btn-convergi btn btn-sm">Ver detalhes</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <i class="fa-solid fa-circle-check fa-2x mb-2"
+                                   style="color:var(--c-success);opacity:.5;display:block"></i>
+                                <span class="text-muted" style="font-size:.875rem">
+                                    Nenhum alerta crítico no momento.
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Gráficos ──────────────────────────────────────────── -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <span class="section-title d-block mb-3">
+                        <i class="fa-solid fa-chart-donut title-icon"></i>
+                        Contratos por Status
+                    </span>
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <span class="section-title d-block mb-3">
+                        <i class="fa-solid fa-chart-pie title-icon"></i>
+                        Contratos por Nível de Risco
+                    </span>
+                    <div class="chart-container">
+                        <canvas id="riscoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── Últimos Contratos ─────────────────────────────────── -->
+    <div class="card mb-5">
+        <div class="card-body p-0">
+            <div class="d-flex align-items-center justify-content-between px-4 pt-4 pb-3"
+                 style="border-bottom:1px solid var(--c-border)">
+                <span class="section-title">
+                    <i class="fa-solid fa-clock-rotate-left title-icon"></i>
+                    Últimos Contratos Cadastrados
+                </span>
+                <a href="/admin/core/contrato/" class="btn-outline-convergi btn btn-sm">
+                    Ver todos
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-convergi mb-0">
+                    <thead>
+                        <tr>
+                            <th>Número</th>
+                            <th>Tipo</th>
+                            <th>Objeto</th>
+                            <th>Responsável</th>
+                            <th>Status</th>
+                            <th>Risco</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contrato in ultimos_contratos %}
+                        <tr>
+                            <td style="font-weight:600">{{ contrato.numero }}</td>
+                            <td>{{ contrato.get_tipo_display }}</td>
+                            <td class="text-truncate" style="max-width:220px" title="{{ contrato.objeto }}">
+                                {{ contrato.objeto }}
+                            </td>
+                            <td>{{ contrato.responsavel }}</td>
+                            <td>
+                                {% if contrato.status == "ATIVO" %}
+                                    <span class="badge badge-ativo">Ativo</span>
+                                {% elif contrato.status == "ENCERRADO" %}
+                                    <span class="badge badge-encerrado">Encerrado</span>
+                                {% else %}
+                                    <span class="badge badge-cancelado">Cancelado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if contrato.nivel_risco == "Alto" %}
+                                    <span class="badge badge-alto">Alto</span>
+                                {% elif contrato.nivel_risco == "Médio" %}
+                                    <span class="badge badge-medio">Médio</span>
+                                {% else %}
+                                    <span class="badge badge-baixo">Baixo</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                Nenhum contrato cadastrado ainda.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const chartFont = { family: 'Inter, system-ui, sans-serif', size: 12 };
+    Chart.defaults.font = chartFont;
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Ativos', 'Vencidos', 'Outros'],
+            datasets: [{
+                data: [{{ contratos_ativos }}, {{ contratos_vencidos }}, {{ total_contratos }} - {{ contratos_ativos }} - {{ contratos_vencidos }}],
+                backgroundColor: ['#16A34A', '#DC2626', '#94A3B8'],
+                borderWidth: 0,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 16, font: chartFont } }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('riscoChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Alto Risco', 'Médio Risco', 'Baixo Risco'],
+            datasets: [{
+                data: [{{ risco_alto }}, {{ risco_medio }}, {{ risco_baixo }}],
+                backgroundColor: ['#DC2626', '#D97706', '#16A34A'],
+                borderWidth: 0,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 16, font: chartFont } }
+            }
+        }
+    });
+</script>
+{% endblock %}
