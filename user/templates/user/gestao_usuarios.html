@@ -1,0 +1,255 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}CONVERGI — Gestão de Usuários{% endblock %}
+
+{% block extra_styles %}
+.page-header {
+    background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-secondary) 100%);
+    border-radius: var(--r-lg);
+    padding: 2rem 2.5rem;
+    color: #fff;
+    margin-bottom: 2rem;
+}
+.page-header h1 { color: #fff; font-size: 1.6rem; margin: 0; letter-spacing: -.4px; }
+.page-header p  { opacity: .75; margin: .3rem 0 0; font-size: .9rem; }
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: 1rem;
+}
+.section-header .badge-count {
+    background: var(--c-primary);
+    color: #fff;
+    border-radius: 20px;
+    font-size: .72rem;
+    font-weight: 700;
+    padding: .2em .7em;
+}
+.section-header .badge-count.zero {
+    background: var(--c-border);
+    color: var(--c-muted);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--c-muted);
+    font-size: .9rem;
+}
+.empty-state i {
+    font-size: 2rem;
+    opacity: .35;
+    display: block;
+    margin-bottom: .75rem;
+}
+
+.btn-aprovar {
+    background: var(--c-success);
+    color: #fff;
+    border: none;
+    border-radius: var(--r-sm);
+    font-family: var(--font);
+    font-size: .78rem;
+    font-weight: 600;
+    padding: .35rem .85rem;
+    cursor: pointer;
+    transition: background .15s;
+}
+.btn-aprovar:hover { background: #15803D; }
+
+.btn-revogar {
+    background: transparent;
+    color: var(--c-danger);
+    border: 1.5px solid var(--c-danger);
+    border-radius: var(--r-sm);
+    font-family: var(--font);
+    font-size: .78rem;
+    font-weight: 600;
+    padding: .32rem .85rem;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+}
+.btn-revogar:hover { background: var(--c-danger); color: #fff; }
+
+.user-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--c-primary);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.user-avatar.pending { background: #FED7AA; color: #9A3412; }
+
+.alert-success-convergi {
+    background: #D1FAE5;
+    border: 1px solid #A7F3D0;
+    border-radius: var(--r-sm);
+    color: #065F46;
+    font-size: .875rem;
+    padding: .7rem 1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 px-lg-5 py-4">
+
+    <!-- Header -->
+    <div class="page-header shadow-sm mb-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h1><i class="fa-solid fa-users-gear me-2" style="opacity:.8"></i>Gestão de Usuários</h1>
+                <p>Aprove ou revogue o acesso dos usuários cadastrados na plataforma.</p>
+            </div>
+            <div class="text-end d-none d-md-block">
+                <div style="font-size:2rem;font-weight:800;">{{ pendentes.count }}</div>
+                <div style="font-size:.78rem;opacity:.7;font-weight:500;">Pendente{{ pendentes.count|pluralize:"s" }} de aprovação</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensagens -->
+    {% for message in messages %}
+    <div class="alert-success-convergi">
+        <i class="fa-solid fa-circle-check"></i>{{ message }}
+    </div>
+    {% endfor %}
+
+    <!-- Pendentes -->
+    <div class="card mb-4">
+        <div class="card-body p-0">
+            <div class="px-4 pt-4 pb-3 border-bottom">
+                <div class="section-header">
+                    <i class="fa-solid fa-clock" style="color:var(--c-warning)"></i>
+                    <span class="section-title">Aguardando aprovação</span>
+                    <span class="badge-count {% if not pendentes %}zero{% endif %}">{{ pendentes.count }}</span>
+                </div>
+            </div>
+
+            {% if pendentes %}
+            <div class="table-responsive">
+                <table class="table table-convergi mb-0">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>E-mail</th>
+                            <th>Cadastrado em</th>
+                            <th class="text-end">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in pendentes %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="user-avatar pending">{{ u.username|first|upper }}</span>
+                                    <div>
+                                        <div style="font-weight:600;font-size:.875rem;">{{ u.username }}</div>
+                                        {% if u.first_name %}
+                                        <div style="font-size:.78rem;color:var(--c-muted)">{{ u.first_name }} {{ u.last_name }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="color:var(--c-muted);font-size:.875rem;">{{ u.email|default:"—" }}</td>
+                            <td style="color:var(--c-muted);font-size:.875rem;">{{ u.date_joined|date:"d/m/Y H:i" }}</td>
+                            <td class="text-end">
+                                <form method="POST" style="display:inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="user_id" value="{{ u.pk }}">
+                                    <input type="hidden" name="action" value="aprovar">
+                                    <button type="submit" class="btn-aprovar">
+                                        <i class="fa-solid fa-check me-1"></i>Aprovar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fa-solid fa-circle-check" style="color:var(--c-success);opacity:1"></i>
+                Nenhum usuário aguardando aprovação.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Aprovados -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="px-4 pt-4 pb-3 border-bottom">
+                <div class="section-header">
+                    <i class="fa-solid fa-circle-check" style="color:var(--c-success)"></i>
+                    <span class="section-title">Usuários com acesso</span>
+                    <span class="badge-count">{{ aprovados.count }}</span>
+                </div>
+            </div>
+
+            {% if aprovados %}
+            <div class="table-responsive">
+                <table class="table table-convergi mb-0">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>E-mail</th>
+                            <th>Cadastrado em</th>
+                            <th class="text-end">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in aprovados %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="user-avatar">{{ u.username|first|upper }}</span>
+                                    <div>
+                                        <div style="font-weight:600;font-size:.875rem;">{{ u.username }}</div>
+                                        {% if u.first_name %}
+                                        <div style="font-size:.78rem;color:var(--c-muted)">{{ u.first_name }} {{ u.last_name }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="color:var(--c-muted);font-size:.875rem;">{{ u.email|default:"—" }}</td>
+                            <td style="color:var(--c-muted);font-size:.875rem;">{{ u.date_joined|date:"d/m/Y H:i" }}</td>
+                            <td class="text-end">
+                                <form method="POST" style="display:inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="user_id" value="{{ u.pk }}">
+                                    <input type="hidden" name="action" value="revogar">
+                                    <button type="submit" class="btn-revogar">
+                                        <i class="fa-solid fa-ban me-1"></i>Revogar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fa-solid fa-user-slash"></i>
+                Nenhum usuário aprovado ainda.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
