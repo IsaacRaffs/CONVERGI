@@ -41,6 +41,12 @@ def gestao_usuarios(request):
     if request.method == 'POST':
         action = request.POST.get('action')
         user_id = request.POST.get('user_id')
+        try:
+            user_id = int(user_id)
+        except (TypeError, ValueError):
+            messages.error(request, 'Usuário inválido.')
+            return redirect('gestao_usuarios')
+
         target = get_object_or_404(User, pk=user_id, is_staff=False)
         if action == 'aprovar':
             target.is_active = True
