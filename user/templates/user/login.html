@@ -1,0 +1,206 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}CONVERGI — Entrar{% endblock %}
+
+{% block extra_styles %}
+.auth-wrapper {
+    min-height: calc(100vh - 140px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 2.5rem 2.25rem;
+}
+
+.auth-logo {
+    width: 52px;
+    height: 52px;
+    background: var(--c-primary);
+    border-radius: var(--r-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: #fff;
+    margin: 0 auto 1.5rem;
+}
+
+.auth-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--c-text);
+    text-align: center;
+    margin-bottom: .3rem;
+    letter-spacing: -.4px;
+}
+
+.auth-subtitle {
+    font-size: .85rem;
+    color: var(--c-muted);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.form-label-convergi {
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    color: var(--c-muted);
+    margin-bottom: .4rem;
+}
+
+.form-control-convergi {
+    font-family: var(--font);
+    font-size: .9rem;
+    border: 1.5px solid var(--c-border);
+    border-radius: var(--r-sm);
+    padding: .6rem .9rem;
+    background: var(--c-surface);
+    color: var(--c-text);
+    width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.form-control-convergi:focus {
+    outline: none;
+    border-color: var(--c-accent);
+    box-shadow: 0 0 0 3px rgba(30,136,229,.12);
+}
+
+.form-control-convergi::placeholder {
+    color: #b0bec5;
+}
+
+.btn-auth {
+    width: 100%;
+    background: var(--c-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--r-sm);
+    font-family: var(--font);
+    font-size: .92rem;
+    font-weight: 600;
+    padding: .7rem;
+    margin-top: .5rem;
+    transition: background .15s, box-shadow .15s;
+    cursor: pointer;
+}
+
+.btn-auth:hover {
+    background: var(--c-secondary);
+    box-shadow: 0 4px 12px rgba(6,60,115,.25);
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin: 1.5rem 0;
+    color: var(--c-border);
+    font-size: .8rem;
+    color: var(--c-muted);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--c-border);
+}
+
+.alert-convergi-error {
+    background: #FEE2E2;
+    border: 1px solid #FECACA;
+    border-radius: var(--r-sm);
+    color: #991B1B;
+    font-size: .85rem;
+    padding: .65rem .9rem;
+    margin-bottom: 1.25rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+
+        <div class="auth-logo">
+            <i class="fa-solid fa-chart-pie"></i>
+        </div>
+
+        <h1 class="auth-title">Bem-vindo de volta</h1>
+        <p class="auth-subtitle">Entre com suas credenciais para acessar a plataforma</p>
+
+        {% if form.errors %}
+        <div class="alert-convergi-error">
+            <i class="fa-solid fa-circle-exclamation me-2"></i>
+            Usuário ou senha inválidos. Tente novamente.
+        </div>
+        {% endif %}
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert-convergi-error" style="background:#D1FAE5;border-color:#A7F3D0;color:#065F46;">
+            <i class="fa-solid fa-circle-check me-2"></i>{{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label-convergi" for="id_username">Usuário</label>
+                <input
+                    type="text"
+                    id="id_username"
+                    name="username"
+                    class="form-control-convergi"
+                    placeholder="Digite seu usuário"
+                    autocomplete="username"
+                    required
+                >
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label-convergi" for="id_password">Senha</label>
+                <input
+                    type="password"
+                    id="id_password"
+                    name="password"
+                    class="form-control-convergi"
+                    placeholder="Digite sua senha"
+                    autocomplete="current-password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn-auth">
+                <i class="fa-solid fa-right-to-bracket me-2"></i>Entrar
+            </button>
+        </form>
+
+        <div class="auth-divider">ou</div>
+
+        <div class="text-center" style="font-size:.875rem;color:var(--c-muted)">
+            Ainda não tem conta?
+            <a href="{% url 'register' %}"
+               style="color:var(--c-secondary);font-weight:600;text-decoration:none;">
+                Cadastre-se
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
