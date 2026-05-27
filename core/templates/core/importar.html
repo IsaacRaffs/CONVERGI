@@ -1,0 +1,425 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}CONVERGI — Importar Dados{% endblock %}
+
+{% block extra_styles %}
+.page-header {
+    background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-secondary) 100%);
+    border-radius: var(--r-lg);
+    padding: 2rem 2.5rem;
+    color: #fff;
+    margin-bottom: 2rem;
+}
+.page-header h1 { color: #fff; font-size: 1.6rem; margin: 0; letter-spacing: -.4px; }
+.page-header p  { opacity: .75; margin: .3rem 0 0; font-size: .9rem; }
+
+/* Abas */
+.import-tabs {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: 1.5rem;
+}
+.import-tab {
+    flex: 1;
+    padding: 1rem 1.25rem;
+    border-radius: var(--r-md);
+    border: 2px solid var(--c-border);
+    background: var(--c-surface);
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+    text-align: center;
+    user-select: none;
+}
+.import-tab:hover { border-color: var(--c-accent); }
+.import-tab.active {
+    border-color: var(--c-primary);
+    box-shadow: 0 0 0 3px rgba(6,60,115,.08);
+}
+.import-tab .tab-icon {
+    font-size: 1.5rem;
+    margin-bottom: .4rem;
+    color: var(--c-muted);
+    display: block;
+    transition: color .15s;
+}
+.import-tab.active .tab-icon { color: var(--c-primary); }
+.import-tab .tab-label {
+    font-size: .875rem;
+    font-weight: 700;
+    color: var(--c-text);
+    display: block;
+}
+.import-tab .tab-desc {
+    font-size: .75rem;
+    color: var(--c-muted);
+    display: block;
+    margin-top: .1rem;
+}
+
+/* Área de upload */
+.drop-zone {
+    border: 2px dashed var(--c-border);
+    border-radius: var(--r-md);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    background: #FAFBFC;
+    position: relative;
+}
+.drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--c-accent);
+    background: #EFF6FF;
+}
+.drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+.drop-icon {
+    font-size: 2.2rem;
+    color: var(--c-muted);
+    margin-bottom: .75rem;
+    display: block;
+    transition: color .15s;
+}
+.drop-zone:hover .drop-icon { color: var(--c-accent); }
+.drop-filename {
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--c-primary);
+    margin-top: .5rem;
+    display: none;
+}
+
+/* Colunas esperadas */
+.col-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin-top: .75rem;
+}
+.col-tag {
+    font-family: 'Courier New', monospace;
+    font-size: .72rem;
+    background: #EFF6FF;
+    color: var(--c-secondary);
+    border: 1px solid #BFDBFE;
+    border-radius: 4px;
+    padding: .2em .55em;
+}
+.col-tag.obrigatorio { background: #EFF6FF; }
+.col-tag.opcional    { background: #F8FAFC; color: var(--c-muted); border-color: var(--c-border); }
+
+/* Resultado */
+.result-card {
+    border-radius: var(--r-md);
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+.result-success { background: #D1FAE5; border: 1px solid #A7F3D0; }
+.result-warning { background: #FFF7ED; border: 1px solid #FED7AA; }
+
+.result-stat {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: .6rem;
+}
+.result-stat .stat-icon {
+    width: 32px; height: 32px;
+    border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .9rem;
+    flex-shrink: 0;
+}
+.stat-ok   { background: #D1FAE5; color: #065F46; }
+.stat-skip { background: #FEF3C7; color: #92400E; }
+.stat-err  { background: #FEE2E2; color: #991B1B; }
+
+.error-list {
+    background: #FEE2E2;
+    border: 1px solid #FECACA;
+    border-radius: var(--r-sm);
+    padding: .75rem 1rem;
+    margin-top: .75rem;
+    max-height: 180px;
+    overflow-y: auto;
+}
+.error-list li {
+    font-size: .78rem;
+    color: #7F1D1D;
+    font-family: 'Courier New', monospace;
+    margin-bottom: .2rem;
+}
+
+.btn-import {
+    background: var(--c-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--r-sm);
+    font-family: var(--font);
+    font-size: .9rem;
+    font-weight: 600;
+    padding: .65rem 1.75rem;
+    cursor: pointer;
+    transition: background .15s, box-shadow .15s;
+}
+.btn-import:hover {
+    background: var(--c-secondary);
+    box-shadow: 0 4px 12px rgba(6,60,115,.25);
+}
+.btn-import:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.info-box {
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-radius: var(--r-sm);
+    padding: .75rem 1rem;
+    font-size: .83rem;
+    color: #1E40AF;
+}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 px-lg-5 py-4">
+
+    <!-- Header -->
+    <div class="page-header shadow-sm">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h1><i class="fa-solid fa-file-arrow-up me-2" style="opacity:.8"></i>Importar Dados</h1>
+                <p>Carregue arquivos CSV para popular o sistema com empresas ou contratos.</p>
+            </div>
+            <div class="d-none d-md-block text-end">
+                <i class="fa-solid fa-table" style="font-size:3rem;opacity:.15;color:#fff"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensagens flash -->
+    {% for message in messages %}
+    <div class="info-box mb-3" style="background:#FEE2E2;border-color:#FECACA;color:#991B1B;">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>{{ message }}
+    </div>
+    {% endfor %}
+
+    <div class="row g-4">
+
+        <!-- Coluna principal: upload -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body p-4">
+
+                    <p class="text-muted mb-3" style="font-size:.875rem;">
+                        Selecione o tipo de dado que deseja importar e faça o upload do arquivo CSV correspondente.
+                    </p>
+
+                    <!-- Abas de seleção -->
+                    <div class="import-tabs" id="tabsContainer">
+                        <div class="import-tab active" id="tab-empresas" onclick="selectTab('empresas')">
+                            <span class="tab-icon"><i class="fa-solid fa-building"></i></span>
+                            <span class="tab-label">Empresas</span>
+                            <span class="tab-desc">Parceiros e conveniadas</span>
+                        </div>
+                        <div class="import-tab" id="tab-contratos" onclick="selectTab('contratos')">
+                            <span class="tab-icon"><i class="fa-solid fa-file-contract"></i></span>
+                            <span class="tab-label">Contratos</span>
+                            <span class="tab-desc">Contratos e convênios</span>
+                        </div>
+                    </div>
+
+                    <!-- Formulário de upload -->
+                    <form method="POST" enctype="multipart/form-data" id="importForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="tipo" id="tipoInput" value="empresas">
+
+                        <div class="drop-zone" id="dropZone">
+                            <input type="file" name="arquivo" id="arquivoInput"
+                                   accept=".csv" onchange="updateFilename(this)">
+                            <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+                            <div style="font-size:.9rem;font-weight:600;color:var(--c-text)">
+                                Arraste o arquivo aqui ou clique para selecionar
+                            </div>
+                            <div style="font-size:.78rem;color:var(--c-muted);margin-top:.3rem">
+                                Somente arquivos <strong>.csv</strong> — UTF-8 ou Latin-1
+                            </div>
+                            <div class="drop-filename" id="dropFilename">
+                                <i class="fa-solid fa-file-csv me-1"></i><span id="filenameText"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between mt-3">
+                            <button type="submit" class="btn-import" id="submitBtn" disabled>
+                                <i class="fa-solid fa-file-import me-2"></i>Importar
+                            </button>
+                            <span style="font-size:.78rem;color:var(--c-muted)">
+                                Registros duplicados serão ignorados automaticamente.
+                            </span>
+                        </div>
+                    </form>
+
+                    <!-- Resultado da importação -->
+                    {% if resultado %}
+                    <div class="result-card {% if resultado.erros %}result-warning{% else %}result-success{% endif %}">
+                        <div style="font-size:.9rem;font-weight:700;color:var(--c-text);margin-bottom:1rem;">
+                            <i class="fa-solid fa-chart-bar me-2"></i>
+                            Resultado — {{ resultado.tipo }}
+                        </div>
+
+                        <div class="result-stat">
+                            <span class="stat-icon stat-ok"><i class="fa-solid fa-check"></i></span>
+                            <div>
+                                <div style="font-weight:700;font-size:1.1rem;color:#065F46">{{ resultado.importados }}</div>
+                                <div style="font-size:.78rem;color:var(--c-muted)">registro{{ resultado.importados|pluralize:"s" }} importado{{ resultado.importados|pluralize:"s" }}</div>
+                            </div>
+                        </div>
+
+                        {% if resultado.ignorados %}
+                        <div class="result-stat">
+                            <span class="stat-icon stat-skip"><i class="fa-solid fa-forward"></i></span>
+                            <div>
+                                <div style="font-weight:700;font-size:1.1rem;color:#92400E">{{ resultado.ignorados }}</div>
+                                <div style="font-size:.78rem;color:var(--c-muted)">ignorado{{ resultado.ignorados|pluralize:"s" }} (duplicados ou vazios)</div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if resultado.erros %}
+                        <div class="result-stat">
+                            <span class="stat-icon stat-err"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                            <div>
+                                <div style="font-weight:700;font-size:1.1rem;color:#991B1B">{{ resultado.erros|length }}</div>
+                                <div style="font-size:.78rem;color:var(--c-muted)">erro{{ resultado.erros|length|pluralize:"s" }} ao processar linhas</div>
+                            </div>
+                        </div>
+                        <ul class="error-list">
+                            {% for erro in resultado.erros %}
+                            <li>{{ erro }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+
+                        {% if resultado.importados > 0 %}
+                        <div class="mt-3">
+                            <a href="{% url 'dashboard' %}" class="btn-import" style="text-decoration:none;display:inline-block;">
+                                <i class="fa-solid fa-chart-line me-2"></i>Ver Dashboard
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna lateral: referência de colunas -->
+        <div class="col-lg-4">
+
+            <!-- Card: Empresas -->
+            <div class="card mb-3" id="ref-empresas">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div style="width:32px;height:32px;background:#EFF6FF;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:var(--c-primary);font-size:.85rem;">
+                            <i class="fa-solid fa-building"></i>
+                        </div>
+                        <span class="section-title">Colunas — Empresas</span>
+                    </div>
+                    <p style="font-size:.78rem;color:var(--c-muted);margin-bottom:.75rem;">
+                        O cabeçalho do CSV deve conter exatamente estes nomes:
+                    </p>
+                    <div class="col-tags">
+                        <span class="col-tag obrigatorio">nome</span>
+                        <span class="col-tag obrigatorio">inicio</span>
+                        <span class="col-tag obrigatorio">termino</span>
+                        <span class="col-tag obrigatorio">cidade</span>
+                        <span class="col-tag opcional">nome_fantasia</span>
+                        <span class="col-tag opcional">cnpj</span>
+                    </div>
+                    <div class="info-box mt-3">
+                        <i class="fa-solid fa-circle-info me-1"></i>
+                        Colunas em <strong>azul</strong> são obrigatórias. Colunas em cinza são opcionais.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card: Contratos -->
+            <div class="card" id="ref-contratos" style="display:none">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div style="width:32px;height:32px;background:#EFF6FF;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:var(--c-primary);font-size:.85rem;">
+                            <i class="fa-solid fa-file-contract"></i>
+                        </div>
+                        <span class="section-title">Colunas — Contratos</span>
+                    </div>
+                    <p style="font-size:.78rem;color:var(--c-muted);margin-bottom:.75rem;">
+                        O cabeçalho do CSV deve conter exatamente estes nomes:
+                    </p>
+                    <div class="col-tags">
+                        <span class="col-tag obrigatorio">numero</span>
+                        <span class="col-tag obrigatorio">tipo</span>
+                        <span class="col-tag obrigatorio">objeto</span>
+                        <span class="col-tag obrigatorio">fornecedor</span>
+                        <span class="col-tag obrigatorio">responsavel</span>
+                        <span class="col-tag obrigatorio">valor</span>
+                        <span class="col-tag obrigatorio">data_inicio</span>
+                        <span class="col-tag obrigatorio">data_fim</span>
+                        <span class="col-tag opcional">status</span>
+                    </div>
+                    <div class="info-box mt-3" style="margin-bottom:.6rem">
+                        <i class="fa-solid fa-calendar me-1"></i>
+                        Datas no formato <strong>DD/MM/AAAA</strong>.
+                    </div>
+                    <div class="info-box">
+                        <i class="fa-solid fa-tag me-1"></i>
+                        <strong>tipo:</strong> CONTRATO ou CONVENIO<br>
+                        <strong>status:</strong> ATIVO, ENCERRADO ou CANCELADO
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+function selectTab(tipo) {
+    document.getElementById('tipoInput').value = tipo;
+
+    document.getElementById('tab-empresas').classList.toggle('active', tipo === 'empresas');
+    document.getElementById('tab-contratos').classList.toggle('active', tipo === 'contratos');
+
+    document.getElementById('ref-empresas').style.display  = tipo === 'empresas'  ? '' : 'none';
+    document.getElementById('ref-contratos').style.display = tipo === 'contratos' ? '' : 'none';
+}
+
+function updateFilename(input) {
+    const nameEl  = document.getElementById('filenameText');
+    const labelEl = document.getElementById('dropFilename');
+    const btn     = document.getElementById('submitBtn');
+
+    if (input.files && input.files[0]) {
+        nameEl.textContent = input.files[0].name;
+        labelEl.style.display = 'block';
+        btn.disabled = false;
+    } else {
+        labelEl.style.display = 'none';
+        btn.disabled = true;
+    }
+}
+
+// drag & drop visual feedback
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop',      e => { e.preventDefault(); dz.classList.remove('dragover'); });
+</script>
+{% endblock %}

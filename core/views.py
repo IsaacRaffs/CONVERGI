@@ -1,13 +1,15 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic.list import ListView
 from django.db.models import Sum
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.decorators import login_required
 
 from .models import Empresa, Contrato
 
 from datetime import date, timedelta
+import pandas as pd
 
 
 # página que contém o sobre nós e o propósito
@@ -100,3 +102,120 @@ def Dashboard(request):
     }
 
     return render(request, "core/dashboard.html", context)
+
+
+@login_required
+def importar_csv(request):
+    resultado = None
+
+    if request.method == 'POST':
+        tipo = request.POST.get('tipo')
+        arquivo = request.FILES.get('arquivo')
+
+        if not arquivo:
+            messages.error(request, 'Nenhum arquivo selecionado.')
+            return redirect('importar')
+
+        # tenta utf-8, cai para latin-1
+        try:
+            df = pd.read_csv(arquivo, encoding='utf-8')
+        except UnicodeDecodeError:
+            arquivo.seek(0)
+            try:
+                df = pd.read_csv(arquivo, encoding='latin-1')
+            except Exception as e:
+                messages.error(request, f'Erro ao ler o arquivo: {e}')
+                return redirect('importar')
+        except Exception as e:
+            messages.error(request, f'Erro ao ler o arquivo: {e}')
+            return redirect('importar')
+
+        df.columns = df.columns.str.strip().str.lower()
+        importados, ignorados, erros = 0, 0, []
+
+        if tipo == 'empresas':
+            obrigatorios = ['nome', 'inicio', 'termino', 'cidade']
+            faltando = [c for c in obrigatorios if c not in df.columns]
+            if faltando:
+                messages.error(request, f'Colunas obrigatórias não encontradas: {", ".join(faltando)}')
+                return redirect('importar')
+
+            for i, row in df.iterrows():
+                try:
+                    nome = str(row.get('nome', '')).strip()
+                    if not nome or nome.lower() == 'nan':
+                        ignorados += 1
+                        continue
+                    if Empresa.objects.filter(nome__iexact=nome).exists():
+                        ignorados += 1
+                        continue
+                    Empresa.objects.create(
+                        nome=nome,
+                        inicio=str(row.get('inicio', '')).strip(),
+                        termino=str(row.get('termino', '')).strip(),
+                        cidade=str(row.get('cidade', '')).strip(),
+                        nome_fantasia=str(row.get('nome_fantasia', '')).strip() if pd.notna(row.get('nome_fantasia')) else '',
+                        cnpj=str(row.get('cnpj', '')).strip() if pd.notna(row.get('cnpj')) else '',
+                    )
+                    importados += 1
+                except Exception as e:
+                    erros.append(f'Linha {i + 2}: {e}')
+
+        elif tipo == 'contratos':
+            obrigatorios = ['numero', 'tipo', 'objeto', 'fornecedor', 'responsavel', 'valor', 'data_inicio', 'data_fim']
+            faltando = [c for c in obrigatorios if c not in df.columns]
+            if faltando:
+                messages.error(request, f'Colunas obrigatórias não encontradas: {", ".join(faltando)}')
+                return redirect('importar')
+
+            for i, row in df.iterrows():
+                try:
+                    numero = str(row.get('numero', '')).strip()
+                    if not numero or numero.lower() == 'nan':
+                        ignorados += 1
+                        continue
+                    if Contrato.objects.filter(numero__iexact=numero).exists():
+                        ignorados += 1
+                        continue
+
+                    data_inicio = pd.to_datetime(row['data_inicio'], dayfirst=True).date()
+                    data_fim = pd.to_datetime(row['data_fim'], dayfirst=True).date()
+
+                    valor_str = str(row['valor']).strip().replace('.', '').replace(',', '.')
+                    valor = float(valor_str)
+
+                    tipo_val = str(row.get('tipo', 'CONTRATO')).strip().upper()
+                    if tipo_val not in ['CONTRATO', 'CONVENIO']:
+                        tipo_val = 'CONTRATO'
+
+                    status_val = str(row.get('status', 'ATIVO')).strip().upper()
+                    if status_val not in ['ATIVO', 'ENCERRADO', 'CANCELADO']:
+                        status_val = 'ATIVO'
+
+                    Contrato.objects.create(
+                        numero=numero,
+                        tipo=tipo_val,
+                        objeto=str(row.get('objeto', '')).strip(),
+                        fornecedor=str(row.get('fornecedor', '')).strip(),
+                        responsavel=str(row.get('responsavel', '')).strip(),
+                        valor=valor,
+                        data_inicio=data_inicio,
+                        data_fim=data_fim,
+                        status=status_val,
+                    )
+                    importados += 1
+                except Exception as e:
+                    erros.append(f'Linha {i + 2}: {e}')
+
+        else:
+            messages.error(request, 'Tipo de importação inválido.')
+            return redirect('importar')
+
+        resultado = {
+            'tipo': 'Empresas' if tipo == 'empresas' else 'Contratos',
+            'importados': importados,
+            'ignorados': ignorados,
+            'erros': erros,
+        }
+
+    return render(request, 'core/importar.html', {'resultado': resultado})
