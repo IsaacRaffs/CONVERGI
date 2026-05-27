@@ -368,6 +368,14 @@
                 </li>
 
                 {% if user.is_authenticated %}
+                {% if user.is_staff %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'gestao_usuarios' %}active{% endif %}"
+                       href="{% url 'gestao_usuarios' %}">
+                        <i class="fa-solid fa-users-gear"></i>Gestão
+                    </a>
+                </li>
+                {% endif %}
                 <li class="nav-item ms-2">
                     <span class="nav-link" style="opacity:.6;cursor:default;font-size:.8rem;">
                         <i class="fa-solid fa-circle-user"></i>{{ user.username }}

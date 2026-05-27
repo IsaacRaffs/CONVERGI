@@ -1,7 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from .forms import UserRegisterForm
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
@@ -29,6 +31,48 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+
+@login_required
+def gestao_usuarios(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        user_id = request.POST.get('user_id')
+        try:
+            user_id = int(user_id)
+        except (TypeError, ValueError):
+            messages.error(request, 'Usuário inválido.')
+            return redirect('gestao_usuarios')
+
+        target = get_object_or_404(User, pk=user_id, is_staff=False)
+        if action == 'aprovar':
+            if target.is_active:
+                messages.error(request, f'Usuário "{target.username}" já está aprovado.')
+            else:
+                target.is_active = True
+                target.save()
+                messages.success(request, f'Usuário "{target.username}" aprovado com sucesso.')
+        elif action == 'revogar':
+            if not target.is_active:
+                messages.error(request, f'Acesso de "{target.username}" já está revogado.')
+            else:
+                target.is_active = False
+                target.save()
+                messages.success(request, f'Acesso de "{target.username}" revogado.')
+        else:
+            messages.error(request, 'Ação inválida.')
+        return redirect('gestao_usuarios')
+
+    pendentes = User.objects.filter(is_active=False, is_staff=False).order_by('date_joined')
+    aprovados = User.objects.filter(is_active=True, is_staff=False).order_by('username')
+
+    return render(request, 'user/gestao_usuarios.html', {
+        'pendentes': pendentes,
+        'aprovados': aprovados,
+    })
 
 
 def register(request):
