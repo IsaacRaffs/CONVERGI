@@ -16,6 +16,7 @@ Diferente de sistemas oficiais de tramitação de processos, o CONVERGI atua com
 * [Padronização de dados](#padronização-de-dados)
 * [Fluxos de navegação](#fluxos-de-navegação)
 * [Estrutura do projeto](#estrutura-do-projeto)
+* [Modelo de Sustentação e Expansão para SaaS](#modelo-de-sustentação-e-expansão-para-saas)
 * [Equipe e Orientação](#-equipe-e-orientação)
 
 ---
@@ -81,6 +82,7 @@ python -m venv env
 
 # Ativar no Linux / macOS:
 source env/bin/activate
+```
 
 **3. Instalar as dependências necessárias:**
 Com o ambiente virtual devidamente ativado, execute o comando abaixo para instalar todos os pacotes e bibliotecas listados no arquivo de requisitos:
@@ -123,14 +125,14 @@ O projeto conta com um script de automação chamado `etldados.py`. Ele serve pa
 * **Exportação:** Salva um novo arquivo CSV limpo e pronto para uso, utilizando codificação `utf-8-sig` para manter a compatibilidade de acentos no Excel.
 
 ### ⚠️ Configuração Obrigatória Antes de Executar:
-Antes de rodar o script, você deve abrir o arquivo `eltdados.py` em seu editor de código e **alterar o nome do arquivo original** que está mapeado na função de leitura pelo nome exato do arquivo CSV que você deseja tratar.
+Antes de rodar o script, você deve abrir o arquivo `etldados.py` em seu editor de código e **alterar o nome do arquivo original** que está mapeado na função de leitura pelo nome exato do arquivo CSV que você deseja tratar.
 
 ### Como Executar:
 
 1. Certifique-se de que o arquivo original está localizado na mesma pasta do script.
 2. Execute o script utilizando o comando:
 ```bash
-python eltdados.py
+python etldados.py
 ```
 
 ---
@@ -227,12 +229,21 @@ CONVERGI/
 │   └── views.py                  # Lógica de autenticação e controle de sessões
 │
 ├── .gitignore                    # Arquivo de exclusão do Git (ignora env, pycache, etc.)
-├── eltdados.py                   # Script utilitário para higienização e ETL de planilhas CSV
+├── etldados.py                   # Script utilitário para higienização e ETL de planilhas CSV
 ├── manage.py                     # Utilitário de linha de comando do Django para o projeto
 ├── requirements.txt
 └── README.md                     # Documentação técnica do projeto
 ```
 
+---
+
+## Modelo de Sustentação e Expansão para SaaS
+
+Por ter nascido em um contexto acadêmico e institucional voltado para o programa "Do Piauí para o Mundo", a sustentabilidade inicial do CONVERGI não depende de cobranças diretas, baseando-se no apoio e adoção da própria universidade. No entanto, o projeto possui uma estratégia de mercado progressiva:
+
+* **Modelo SaaS (Software as a Service):** O escopo do projeto prevê explicitamente que, em uma fase posterior, caso a solução seja replicada para outras instituições (como outras universidades, institutos, secretarias ou prefeituras que enfrentam o mesmo problema de monitoramento de prazos), poderão ser avaliados modelos de licenciamento, implantação personalizada ou comercialização como SaaS (*Software as a Service*).
+* **Arquitetura em Nuvem:** Essa transição para o modelo SaaS permitiria que a plataforma funcionasse de forma totalmente em nuvem e escalável para clientes externos no futuro, embora essa possibilidade seja tratada como uma expansão pós-MVP.
+  
 ---
 
 ## 👥 Equipe e Orientação
