@@ -81,9 +81,8 @@ def Dashboard(request):
     )["total"] or 0
 
     alertas_criticos = contratos.filter(
-        status="ATIVO",
         data_fim__lte=limite_30_dias
-    ).order_by("data_fim")[:10]
+    ).exclude(status="CANCELADO").order_by("data_fim")[:10]
 
     # ordena usando a string e busca de trás pra frente em até 5 ocorrências
     ultimos_contratos = contratos.order_by("-criado_em")[:5]
