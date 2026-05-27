@@ -38,9 +38,9 @@ O MVP do CONVERGI foca estritamente nas regras de negócio e interações essenc
 ### 🚨 Regras do Motor de Alertas
 
 O principal diferencial técnico da plataforma é a automação preventiva dos prazos:
-* **Crítico (Vencendo Hoje):** Evidencia de forma imediata o instrumento que expira na data atual.
-* **Urgente (Próximos 7 dias):** Prioriza ações administrativas que demandam providências imediatas de renovação.
-* **Atenção (Próximos 14 dias):** Alerta preventivo para permitir o planejamento antecipado das equipes.
+* **Alto (Vencendo Hoje ou já expirado):** Destaca imediatamente na interface os instrumentos jurídicos que atingiram a data limite ou que já estão vencidos, exigindo tratativas administrativas urgentes.
+* **Médio (Nos próximos 30 dias):** Sinaliza os contratos e termos que se aproximam do fim da vigência, priorizando as ações necessárias para a abertura de processos de renovação ou termos aditivos.
+* **Baixo (Mais de 30 dias):** Atua como o alerta padrão do sistema para prazos sob total controle, indicando que o instrumento possui vigência estável e não apresenta risco de vencimento, servindo como base para o planejamento antecipado das equipes.
 
 ---
 
