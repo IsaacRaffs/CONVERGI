@@ -143,38 +143,81 @@ O CONVERGI adapta dinamicamente os elementos visuais das interfaces e libera cam
 
 ```mermaid
 graph TD
-    %% Nós do Fluxo Geral
-    Home["home.html<br>(/)"] -->|Acessar Login| Login["login.html<br>(/user/login/)"]
-    
-    %% Ramificação pós-login
-    Login -->|Autenticado como Gestor| Dash["dashboard.html<br>(/dashboard/)"]
-    Login -->|Autenticado como Superuser| Super["gestao_usuarios.html<br>(/user/gestao/usuarios/)"]
-    
-    %% Fluxo do Gestor / Servidor
-    Dash -->|Menu Navbar| List["listar_empresas.html<br>(/empresas/)"]
-    Dash -->|Menu Navbar| Cad["Formulário de Cadastro<br>(/cadastrar/)"]
-    Dash -->|Sair do Sistema| Logout["logout_view<br>(/user/logout/)"] --> Home
-    
-    %% Fluxo do Superuser
-    Super -->|Controle Total| Admin["Django Admin<br>(/admin/)"]
-    Super -->|Navegar Operacional| Dash
-    
-    style Home fill:#131929,stroke:#4a5568,stroke-width:2px;
-    style Login fill:#1a2035,stroke:#8892a4,stroke-width:2px;
-    style Dash fill:#131929,stroke:#3ddc84,stroke-width:2px;
-    style Super fill:#1a2035,stroke:#f5a623,stroke-width:2px;
+    %% Ambiente do Visitante (Não Autenticado)
+    subgraph S1 ["🔓 Ambiente Não Autenticado (Visitante)"]
+        HomeNoAuth["Página Inicial (Visitante)<br>home.html (/)"]
+        NavNoAuth{"Navbar / Card Central"}
+        RegPage["Tela de Cadastro<br>register.html (/user/register/)"]
+        LogPage["Tela de Login<br>login.html (/user/login/)"]
+
+        HomeNoAuth --> NavNoAuth
+        NavNoAuth -->|Botão: Criar Conta| RegPage
+        NavNoAuth -->|Botão: Entrar| LogPage
+    end
+
+    %% Fluxo de Autenticação
+    RegPage -->|Pós-Cadastro| LogPage
+    LogPage -->|Autenticação Efetuada| CheckAuth{"Qual o nível de acesso?"}
+
+    %% Ramificações Pós-Login
+    CheckAuth -->|Usuário Comum / Gestor| HomeGestor["Home Logado (Gestor)<br>home.html (/)"]
+    CheckAuth -->|Superuser / Admin| HomeAdmin["Home Logado (Admin)<br>home.html (/)"]
+
+    %% Fluxo de Navegação do Gestor (Não Admin)
+    subgraph S2 ["🔒 Ambiente Gestor (Não Admin)"]
+        HomeGestor --> NavGestor{"Navbar Slim & Card"}
+        NavGestor -->|Dashboard / Atalho Card| DashPage["Dashboard<br>dashboard.html (/dashboard/)"]
+        NavGestor -->|Empresas / Atalho Card| EmpPage["Empresas<br>listar_empresas.html (/empresas/)"]
+        NavGestor -->|Importar| ImpPage["Importar CSV / ETL<br>importar.html (/importar/)"]
+        NavGestor -->|Sair| LogoutGestor["logout_view<br>(/user/logout/)"] --> LogPage
+    end
+
+    %% Fluxo de Navegação do Superuser (Admin)
+    subgraph S3 ["⚡ Ambiente Superuser (Admin Global)"]
+        HomeAdmin --> NavAdmin{"Navbar Completa & Card"}
+        NavAdmin -->|Dashboard / Atalho Card| DashPageAdmin["Dashboard<br>dashboard.html (/dashboard/)"]
+        NavAdmin -->|Empresas / Atalho Card| EmpPageAdmin["Empresas<br>listar_empresas.html (/empresas/)"]
+        NavAdmin -->|Importar| ImpPageAdmin["Importar CSV / ETL<br>importar.html (/importar/)"]
+        
+        %% Rotas Exclusivas do Admin
+        NavAdmin -->|Contratos| ContPage["Contratos<br>listar_contratos.html (/contratos/)"]
+        NavAdmin -->|Gestão| GestPage["Gestão de Usuários<br>gestao_usuarios.html (/user/gestao/)"]
+        GestPage -->|Acesso Avançado| AdminCore["Django Admin<br>(/admin/)"]
+        
+        NavAdmin -->|Sair| LogoutAdmin["logout_view<br>(/user/logout/)"] --> LogPage
+    end
+
+    %% Estilização Visual Customizada
+    style S1 fill:#161b22,stroke:#444c56,stroke-width:1px,color:#fff;
+    style S2 fill:#0d1117,stroke:#3ddc84,stroke-width:1px,color:#fff;
+    style S3 fill:#0f172a,stroke:#f5a623,stroke-width:1px,color:#fff;
+    style HomeNoAuth fill:#131929,stroke:#4a5568,stroke-width:2px,color:#fff;
+    style HomeGestor fill:#131929,stroke:#3ddc84,stroke-width:2px,color:#fff;
+    style HomeAdmin fill:#131929,stroke:#f5a623,stroke-width:2px,color:#fff;
+    style LogPage fill:#1a2035,stroke:#fbb056,stroke-width:2px,color:#fff;
+    style RegPage fill:#1a2035,stroke:#8892a4,stroke-width:2px,color:#fff;
+    style DashPage fill:#131929,stroke:#3ddc84,stroke-width:2px,color:#fff;
+    style DashPageAdmin fill:#131929,stroke:#3ddc84,stroke-width:2px,color:#fff;
+    style GestPage fill:#1a2035,stroke:#f5a623,stroke-width:2px,color:#fff;
 ```
 
-### 🖥️ Navbar do Gestor / Servidor
-Barra de navegação padrão exibida para a equipe operacional responsável pelo monitoramento diário dos prazos documentais.  
-* **Links ativos:** `Início` · `Dashboard` · `Empresas` · `Cadastrar` · `Sair`
-* **Comportamento visual:** Estruturada sobre o fundo azul institucional da plataforma, apresenta ícones descritivos ao lado de cada link de navegação e um botão destacado em formato de card integrado para a ação de autenticação/sessão (`Entrar` / `Sair`).
+### 🔓 Navbar do Visitante (Não Autenticado)
+Barra de navegação inicial e simplificada exibida para usuários que ainda não acessaram o sistema ou não possuem cadastro.
+* **Links ativos:** `Início` · `Cadastrar` · `Entrar`
+* **Comportamento visual e de interface:** Focada exclusivamente na recepção e conversão do usuário. O card central azul exibe de forma dinâmica as ações de entrada: o botão **`Criar Conta`** (direciona para `/user/register/`) e o botão **`Entrar`** (direciona para `/user/login/`).
+
+### 🖥️ Navbar do Gestor / Servidor (Autenticado — Não Admin)
+Barra de navegação padrão exibida para a equipe operacional logada, responsável pelo monitoramento diário e cargas de dados.  
+* **Links ativos:** `Início` · `Dashboard` · `Empresas` · `Importar` · **`@username`** · `Sair`
+* **Comportamento visual e de interface:** Estruturada sobre o fundo azul institucional da plataforma, apresenta ícones descritivos e identifica o usuário logado na barra superior. O card central azul altera-se dinamicamente para atalhos ágeis de rotina, exibindo os botões: **`Acessar Dashboard`** (vai para `/dashboard/`) e **`Ver Empresas`** (vai para `/empresas/`).
+* **Restrição de Escopo:** Os menus e as rotas críticas de `Contratos` e `Gestão` ficam totalmente ocultos e inacessíveis para este nível de permissão.
 
 ### ⚡ Navbar do Superuser (Administrador)
-Menu expandido e restrito, liberado exclusivamente para contas que possuem a flag de administrador global ativa no banco de dados.  
-* **Links ativos:** `Início` · `Dashboard` · `Empresas` · `Cadastrar` · **`Gestão de Usuários`** · `Sair`
-* **Comportamento visual:** Adiciona à barra azul as opções de governança técnica e moderação de contas.
-* **Rota Restrita:** O endereço `http://127.0.0.1:8000/user/gestao/usuarios/` torna-se acessível na interface, permitindo que o administrador execute o controle de credenciais, auditoria de ações e moderação de perfis de forma centralizada.
+Menu totalmente expandido e restrito, liberado exclusivamente para contas que possuem a flag de administrador global ativa no banco de dados.  
+* **Links ativos:** `Início` · `Dashboard` · `Empresas` · `Importar` · **`Contratos`** · **`Gestão`** · **`@username`** · `Sair`
+* **Comportamento visual e de interface:** Adiciona à barra azul as opções de governança técnica, listagem profunda de vigências e moderação avançada de contas, além de manter os botões de atalho rápido no card central.
+* **Rotas Exclusivas Ativadas:** * **Contratos (`/contratos/`):** Libera o acesso à tela `listar_contratos.html` para gerenciamento completo e auditoria de instrumentos jurídicos e aditivos.
+  * **Gestão de Usuários (`/user/gestao/`):** O endereço torna-se acessível na interface, renderizando a tela `gestao_usuarios.html` para controle de credenciais e moderação de perfis, contendo também um link direto para o controle total do **Django Admin** (`/admin/`).
 ---
 
 ## Estrutura do projeto
@@ -182,57 +225,65 @@ Menu expandido e restrito, liberado exclusivamente para contas que possuem a fla
 ```text
 CONVERGI/
 │
-├── convergi_config/              # Diretório de configuração global do projeto Django
+├── convergi_config/                  # Diretório de configuração global do projeto Django
 │   ├── __init__.py
-│   ├── asgi.py                   # Configuração para servidores assíncronos
-│   ├── settings.py               # Definições gerais, APPs instaladas e segurança
-│   ├── urls.py                   # Roteamento global de URLs do sistema
-│   └── wsgi.py                   # Configuração para servidores WSGI (produção)
+│   ├── asgi.py                       # Configuração para servidores assíncronos
+│   ├── settings.py                   # Definições gerais, apps instaladas e segurança
+│   ├── urls.py                       # Roteamento global de URLs do sistema
+│   └── wsgi.py                       # Configuração para servidores WSGI (produção)
 │
-├── core/                         # Aplicação principal (Regras de negócio e Dashboards)
-│   ├── migrations/               # Histórico de evolução do banco de dados (core)
+├── core/                             # Aplicação principal (Regras de negócio e Dashboards)
+│   ├── migrations/                   # Histórico de evolução do banco de dados (core)
 │   │   ├── __init__.py
-│   │   └── 0001_initial.py       # Estrutura inicial das tabelas de convênios/termos
-│   ├── static/media/             # Arquivos de mídia estáticos (ex: imagens da equipe)
+│   │   └── 0001_initial.py           # Estrutura inicial das tabelas de convênios/termos
+│   ├── static/media/                 # Arquivos de mídia estáticos (ex: imagens da equipe)
 │   │   ├── 1.jpg
 │   │   ├── 2.jpg
 │   │   ├── 3.jpg
 │   │   ├── 4.jpg
 │   │   └── isaac.jpg
-│   ├── templates/core/           # Páginas HTML da aplicação principal
-│   │   ├── base.html             # Template estrutural base (Navbar, Sidebar e Footer)
-│   │   ├── dashboard.html        # Painel dinâmico com indicadores e motor de alertas
-│   │   ├── home.html             # Página de apresentação inicial
-│   │   └── listar_empresas.html  # Tela de consulta rápida e listagem de convênios
+│   ├── templates/core/               # Páginas HTML da aplicação principal
+│   │   ├── base.html                 # Template estrutural base (Navbar integrada)
+│   │   ├── confirmar_exclusao.html   # Tela de confirmação segura antes da remoção de registros
+│   │   ├── contrato_form.html        # Formulário unificado para cadastro e edição de instrumentos
+│   │   ├── dashboard.html            # Painel dinâmico com indicadores macro e motor de alertas
+│   │   ├── home.html                 # Landing page institucional (Missão, Visão e Valores)
+│   │   ├── importar.html             # Área de upload e carga de planilhas de dados
+│   │   ├── listar_contratos.html     # Painel de controle e listagem de contratos
+│   │   └── listar_empresas.html      # Tela de consulta rápida de empresas conveniadas
 │   ├── __init__.py
-│   ├── admin.py                  # Customização do Django Admin para o Core
+│   ├── admin.py                      # Customização do Django Admin para o Core
 │   ├── apps.py
-│   ├── models.py                 # Modelagem das entidades (Instrumento, Documento, etc.)
-│   ├── tests.py                  # Testes automatizados unitários
-│   └── views.py                  # Lógica de controle e renderização das telas core
+│   ├── forms.py                      # Formulários Django para validação de contratos e empresas
+│   ├── models.py                     # Modelagem das entidades (Instrumento, Documento, Empresa)
+│   ├── tests.py                      # Testes automatizados unitários
+│   └── views.py                      # Lógica de controle e renderização das telas operacionais
 │
-├── user/                         # Aplicação responsável pelo gerenciamento de usuários
-│   ├── migrations/               # Histórico de migrações do app user
+├── env/                              # Diretório do ambiente virtual Python (dependências locais)
+│
+├── user/                             # Aplicação responsável pelo gerenciamento de usuários
+│   ├── migrations/                   # Histórico de migrações do app user
 │   │   └── __init__.py
-│   ├── templates/user/           # Páginas HTML do fluxo de autenticação e perfis
-│   │   ├── email.html
-│   │   ├── gestao_usuarios.html  # Tela de controle para o perfil Administrador
-│   │   ├── index.html
-    │   ├── login.html            # Tela de login do sistema
-│   │   └── register.html         # Tela de cadastro de novos usuários
+│   ├── templates/user/               # Páginas HTML do fluxo de autenticação e perfis
+│   │   ├── email.html                # Template para notificações ou validações por e-mail
+│   │   ├── gestao_usuarios.html      # Tela de controle e moderação para o perfil Administrador
+│   │   ├── index.html                # Página index interna de usuários
+│   │   ├── login.html                # Tela de autenticação de usuários
+│   │   └── register.html             # Tela de cadastro de novos servidores/gestores
 │   ├── __init__.py
 │   ├── admin.py
 │   ├── apps.py
-│   ├── forms.py                  # Formulários Django para validação de login e cadastro
-│   ├── models.py                 # Extensão ou uso de perfis de acesso e permissões
-│   ├── urls.py                   # Rotas específicas do app de usuários
-│   └── views.py                  # Lógica de autenticação e controle de sessões
+│   ├── forms.py                      # Formulários Django para validação de segurança e login
+│   ├── models.py                     # Extensão de perfis de acesso (Permissões e níveis)
+│   ├── urls.py                       # Rotas específicas do app de usuários
+│   └── views.py                      # Lógica de autenticação e controle de sessões ativas
 │
-├── .gitignore                    # Arquivo de exclusão do Git (ignora env, pycache, etc.)
-├── etldados.py                   # Script utilitário para higienização e ETL de planilhas CSV
-├── manage.py                     # Utilitário de linha de comando do Django para o projeto
-├── requirements.txt
-└── README.md                     # Documentação técnica do projeto
+├── .gitignore                        # Arquivo de exclusão do Git (ignora env, pycache, etc.)
+├── db.sqlite3                        # Banco de dados relacional local utilizado no desenvolvimento
+├── etldados.py                       # Script utilitário para higienização e ETL de planilhas CSV
+├── manage.py                         # Utilitário de linha de comando do Django para o projeto
+├── README.md                         # Documentação técnica do projeto
+└── requirements.txt                  # Dependências e bibliotecas do ecossistema Python
 ```
 
 ---
