@@ -1,0 +1,38 @@
+{% extends "admin/import_export/import.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+
+<style>
+
+/* REMOVE QUASE TODO O ROXO */
+
+html[data-theme="dark"] table.import-preview td ins,
+html[data-theme="dark"] table.import-preview td del {
+    background-color: rgba(255,255,255,0.05) !important;
+
+    color: black !important;
+
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+/* LINHAS */
+html[data-theme="dark"] table.import-preview tr.new,
+html[data-theme="dark"] table.import-preview tr.update,
+html[data-theme="dark"] table.import-preview tr.delete,
+html[data-theme="dark"] table.import-preview tr.skip {
+    background-color: #ffffff !important;
+}
+
+/* CÉLULAS */
+html[data-theme="dark"] table.import-preview td,
+html[data-theme="dark"] table.import-preview th {
+    background-color: white !important;
+    color: black !important;
+}
+
+</style>
+
+{% endblock %}
