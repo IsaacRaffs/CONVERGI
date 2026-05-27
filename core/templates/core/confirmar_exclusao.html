@@ -1,0 +1,54 @@
+{% extends "core/base.html" %}
+
+{% block title %}CONVERGI — Excluir Contrato{% endblock %}
+
+{% block extra_styles %}
+    .page-header {
+        background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+        padding: 1.75rem 0;
+        margin-bottom: 2rem;
+    }
+    .page-header h4 { color: #fff; font-size: 1.25rem; margin: 0; }
+    .page-header p  { color: rgba(255,255,255,.65); font-size: .83rem; margin: .2rem 0 0; }
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="container-fluid px-4 px-lg-5">
+        <h4><i class="fa-solid fa-trash me-2" style="opacity:.8"></i>Excluir Contrato</h4>
+        <p>Esta ação não pode ser desfeita</p>
+    </div>
+</div>
+
+<div class="container-fluid px-4 px-lg-5 pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-body p-4 p-lg-5 text-center">
+                    <i class="fa-solid fa-triangle-exclamation fa-3x mb-3" style="color:var(--c-danger)"></i>
+                    <h5 class="fw-bold mb-1">Confirmar exclusão</h5>
+                    <p class="text-muted mb-4" style="font-size:.9rem">
+                        Você está prestes a excluir o contrato
+                        <strong>{{ contrato.numero }}</strong> — <em>{{ contrato.fornecedor }}</em>.
+                        Essa operação é irreversível.
+                    </p>
+                    <div class="d-flex gap-3 justify-content-center">
+                        <a href="{% url 'listar_contratos' %}" class="btn-outline-convergi btn">
+                            Cancelar
+                        </a>
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn"
+                                    style="background:var(--c-danger);color:#fff;border-radius:var(--r-sm);font-size:.83rem;font-weight:500;padding:.45rem 1.1rem">
+                                <i class="fa-solid fa-trash me-1"></i>Excluir definitivamente
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

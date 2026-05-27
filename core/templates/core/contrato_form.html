@@ -1,0 +1,246 @@
+{% extends "core/base.html" %}
+
+{% block title %}CONVERGI — {{ titulo }}{% endblock %}
+
+{% block extra_styles %}
+    .page-header {
+        background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-secondary) 100%);
+        padding: 1.75rem 0;
+        margin-bottom: 2rem;
+    }
+    .page-header h4 { color: #fff; font-size: 1.25rem; margin: 0; }
+    .page-header p  { color: rgba(255,255,255,.65); font-size: .83rem; margin: .2rem 0 0; }
+
+    .form-convergi {
+        font-family: var(--font);
+        font-size: .875rem;
+        border: 1.5px solid var(--c-border);
+        border-radius: var(--r-sm);
+        padding: .5rem .85rem;
+        color: var(--c-text);
+        background: #fff;
+        transition: border-color .15s, box-shadow .15s;
+        width: 100%;
+    }
+    .form-convergi:focus {
+        outline: none;
+        border-color: var(--c-accent);
+        box-shadow: 0 0 0 3px rgba(30,136,229,.12);
+    }
+    .form-convergi.is-invalid {
+        border-color: var(--c-danger);
+    }
+    .form-label-convergi {
+        font-size: .78rem;
+        font-weight: 700;
+        letter-spacing: .4px;
+        text-transform: uppercase;
+        color: var(--c-muted);
+        margin-bottom: .35rem;
+        display: block;
+    }
+    .field-group { margin-bottom: 1.25rem; }
+    .error-msg {
+        font-size: .78rem;
+        color: var(--c-danger);
+        margin-top: .3rem;
+    }
+    .section-divider {
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .7px;
+        text-transform: uppercase;
+        color: var(--c-accent);
+        border-bottom: 1px solid var(--c-border);
+        padding-bottom: .5rem;
+        margin-bottom: 1.25rem;
+        margin-top: .25rem;
+    }
+    .btn-danger-outline {
+        background: transparent;
+        color: var(--c-danger);
+        border: 1.5px solid var(--c-danger);
+        font-family: var(--font);
+        font-weight: 500;
+        font-size: .83rem;
+        border-radius: var(--r-sm);
+        padding: .45rem 1.1rem;
+        transition: background .15s, color .15s;
+    }
+    .btn-danger-outline:hover {
+        background: var(--c-danger);
+        color: #fff;
+    }
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="container-fluid px-4 px-lg-5 d-flex align-items-center justify-content-between">
+        <div>
+            <h4>
+                <i class="fa-solid fa-file-contract me-2" style="opacity:.8"></i>{{ titulo }}
+            </h4>
+            <p>Preencha os dados do contrato ou convênio</p>
+        </div>
+        <a href="{% url 'listar_contratos' %}" class="btn-outline-convergi btn"
+           style="font-size:.83rem;background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.35)">
+            <i class="fa-solid fa-arrow-left me-1"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<div class="container-fluid px-4 px-lg-5 pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <div class="card">
+                <div class="card-body p-4 p-lg-5">
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Identificação -->
+                        <div class="section-divider">Identificação</div>
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <div class="field-group">
+                                    <label class="form-label-convergi" for="{{ form.numero.id_for_label }}">
+                                        {{ form.numero.label }}
+                                    </label>
+                                    {{ form.numero }}
+                                    {% if form.numero.errors %}
+                                    <div class="error-msg">{{ form.numero.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="field-group">
+                                    <label class="form-label-convergi" for="{{ form.tipo.id_for_label }}">
+                                        {{ form.tipo.label }}
+                                    </label>
+                                    {{ form.tipo }}
+                                    {% if form.tipo.errors %}
+                                    <div class="error-msg">{{ form.tipo.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="form-label-convergi" for="{{ form.objeto.id_for_label }}">
+                                {{ form.objeto.label }}
+                            </label>
+                            {{ form.objeto }}
+                            {% if form.objeto.errors %}
+                            <div class="error-msg">{{ form.objeto.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Partes -->
+                        <div class="section-divider">Partes Envolvidas</div>
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <div class="field-group">
+                                    <label class="form-label-convergi" for="{{ form.fornecedor.id_for_label }}">
+                                        {{ form.fornecedor.label }}
+                                    </label>
+                                    {{ form.fornecedor }}
+                                    {% if form.fornecedor.errors %}
+                                    <div class="error-msg">{{ form.fornecedor.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="field-group">
+                                    <label class="form-label-convergi" for="{{ form.responsavel.id_for_label }}">
+                                        {{ form.responsavel.label }}
+                                    </label>
+                                    {{ form.responsavel }}
+                                    {% if form.responsavel.errors %}
+                                    <div class="error-msg">{{ form.responsavel.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Valores e Datas -->
+                        <div class="section-divider">Valores e Prazos</div>
+                        <div class="row g-3">
+                            <div class="col-sm-4">
+                                <div class="field-group">
+                                    <label class="form-label-convergi" for="{{ form.valor.id_for_label }}">
+                                        {{ form.valor.label }}
+                                    </label>
+                                    {{ form.valor }}
+                                    {% if form.valor.errors %}
+                                    <div class="error-msg">{{ form.valor.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="field-group">
+                                    <label class="form-label-convergi" for="{{ form.data_inicio.id_for_label }}">
+                                        {{ form.data_inicio.label }}
+                                    </label>
+                                    {{ form.data_inicio }}
+                                    {% if form.data_inicio.errors %}
+                                    <div class="error-msg">{{ form.data_inicio.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="field-group">
+                                    <label class="form-label-convergi" for="{{ form.data_fim.id_for_label }}">
+                                        {{ form.data_fim.label }}
+                                    </label>
+                                    {{ form.data_fim }}
+                                    {% if form.data_fim.errors %}
+                                    <div class="error-msg">{{ form.data_fim.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="section-divider">Situação</div>
+                        <div class="row g-3">
+                            <div class="col-sm-4">
+                                <div class="field-group">
+                                    <label class="form-label-convergi" for="{{ form.status.id_for_label }}">
+                                        {{ form.status.label }}
+                                    </label>
+                                    {{ form.status }}
+                                    {% if form.status.errors %}
+                                    <div class="error-msg">{{ form.status.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ações -->
+                        <div class="d-flex align-items-center justify-content-between mt-4 pt-3"
+                             style="border-top:1px solid var(--c-border)">
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'listar_contratos' %}" class="btn-outline-convergi btn">
+                                    Cancelar
+                                </a>
+                                <button type="submit" class="btn-convergi btn">
+                                    <i class="fa-solid fa-floppy-disk me-1"></i>{{ acao }}
+                                </button>
+                            </div>
+                            {% if contrato %}
+                            <a href="{% url 'excluir_contrato' contrato.pk %}" class="btn btn-danger-outline">
+                                <i class="fa-solid fa-trash me-1"></i>Excluir
+                            </a>
+                            {% endif %}
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
