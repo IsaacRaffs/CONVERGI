@@ -47,7 +47,7 @@ def listar_empresas(request, empresa_id=None):
 
 class SearchView(LoginRequiredMixin, ListView):
     model = Empresa
-    template_name = 'listar_empresas.html'
+    template_name = 'core/listar_empresas.html'
     context_object_name = 'empresas'
     paginate_by = 5
 
