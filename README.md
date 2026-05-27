@@ -80,8 +80,7 @@ python -m venv env
 .\env\Scripts\activate
 
 # Ativar no Linux / macOS:
-source ./env/Scripts/activate
-```
+source env/bin/activate
 
 **3. Instalar as dependências necessárias:**
 Com o ambiente virtual devidamente ativado, execute o comando abaixo para instalar todos os pacotes e bibliotecas listados no arquivo de requisitos:
@@ -112,7 +111,7 @@ python manage.py runserver
 
 ## Padronização de dados
 
-O projeto conta com um script de automação chamado `eltdados.py`. Ele serve para limpar, tratar e padronizar planilhas de empresas conveniadas antes que esses dados sejam integrados ao sistema.
+O projeto conta com um script de automação chamado `etldados.py`. Ele serve para limpar, tratar e padronizar planilhas de empresas conveniadas antes que esses dados sejam integrados ao sistema.
 
 ### Como o script funciona:
 * **Leitura:** Carrega o arquivo em formato CSV, ajustando o início da leitura para alinhar corretamente com as colunas de dados úteis.
