@@ -25,7 +25,7 @@ def home(request):
 def listar_empresas(request, empresa_id=None):
         # pega todas as empresas e ordena elas pelo id
         all_empresas = Empresa.objects.all().order_by('id')
-        p = Paginator(all_empresas, 5)
+        p = Paginator(all_empresas, 6)
         page_number = request.GET.get('page')
         
         try:
