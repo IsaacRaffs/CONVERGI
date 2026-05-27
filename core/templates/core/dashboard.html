@@ -39,10 +39,17 @@
             <h4><i class="fa-solid fa-chart-line me-2" style="opacity:.8"></i>Dashboard de Contratos</h4>
             <p>Visão consolidada do portfólio de convênios e contratos</p>
         </div>
-        <a href="/admin/core/contrato/add/" class="btn-convergi btn"
-           style="font-size:.83rem">
-            <i class="fa-solid fa-plus me-1"></i>Novo Contrato
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{% url 'importar' %}" class="btn-outline-convergi btn"
+               style="font-size:.83rem;background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.35)">
+                <i class="fa-solid fa-file-arrow-up me-1"></i>Importar CSV
+            </a>
+            {% if user.is_staff %}
+            <a href="{% url 'novo_contrato' %}" class="btn-convergi btn" style="font-size:.83rem">
+                <i class="fa-solid fa-plus me-1"></i>Novo Contrato
+            </a>
+            {% endif %}
+        </div>
     </div>
 </div>
 
@@ -170,8 +177,10 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <a href="/admin/core/contrato/{{ contrato.pk }}/change/"
+                                {% if user.is_staff %}
+                                <a href="{% url 'editar_contrato' contrato.pk %}"
                                    class="btn-convergi btn btn-sm">Ver detalhes</a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% empty %}
@@ -233,9 +242,11 @@
                     <i class="fa-solid fa-clock-rotate-left title-icon"></i>
                     Últimos Contratos Cadastrados
                 </span>
-                <a href="/admin/core/contrato/" class="btn-outline-convergi btn btn-sm">
+                {% if user.is_staff %}
+                <a href="{% url 'listar_contratos' %}" class="btn-outline-convergi btn btn-sm">
                     Ver todos
                 </a>
+                {% endif %}
             </div>
             <div class="table-responsive">
                 <table class="table table-convergi mb-0">
