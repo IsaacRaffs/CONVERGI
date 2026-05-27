@@ -366,6 +366,14 @@
                         <i class="fa-solid fa-building"></i>Empresas
                     </a>
                 </li>
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'importar' %}active{% endif %}"
+                       href="{% url 'importar' %}">
+                        <i class="fa-solid fa-file-arrow-up"></i>Importar
+                    </a>
+                </li>
+                {% endif %}
 
                 {% if user.is_authenticated %}
                 {% if user.is_staff %}
