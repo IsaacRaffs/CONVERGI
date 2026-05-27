@@ -9,7 +9,9 @@ from django.contrib.auth.decorators import login_required
 from .models import Empresa, Contrato
 
 from datetime import date, timedelta
-import pandas as pd
+import csv
+import io
+from dateutil import parser as dateparser
 
 
 # página que contém o sobre nós e o propósito
@@ -104,6 +106,33 @@ def Dashboard(request):
     return render(request, "core/dashboard.html", context)
 
 
+def _ler_csv(arquivo):
+    raw = arquivo.read()
+    for encoding in ('utf-8-sig', 'utf-8', 'latin-1'):
+        try:
+            texto = raw.decode(encoding)
+            reader = csv.DictReader(io.StringIO(texto))
+            rows = list(reader)
+            colunas = {k.strip().lower(): k for k in (reader.fieldnames or [])}
+            return rows, colunas, None
+        except UnicodeDecodeError:
+            continue
+    return None, None, 'Não foi possível decodificar o arquivo. Use UTF-8 ou Latin-1.'
+
+
+def _parse_data(valor):
+    return dateparser.parse(valor.strip(), dayfirst=True).date()
+
+
+def _parse_valor(valor):
+    v = valor.strip().replace(' ', '')
+    if ',' in v and '.' in v:
+        v = v.replace('.', '').replace(',', '.')
+    elif ',' in v:
+        v = v.replace(',', '.')
+    return float(v)
+
+
 @login_required
 def importar_csv(request):
     resultado = None
@@ -116,34 +145,28 @@ def importar_csv(request):
             messages.error(request, 'Nenhum arquivo selecionado.')
             return redirect('importar')
 
-        # tenta utf-8, cai para latin-1
-        try:
-            df = pd.read_csv(arquivo, encoding='utf-8')
-        except UnicodeDecodeError:
-            arquivo.seek(0)
-            try:
-                df = pd.read_csv(arquivo, encoding='latin-1')
-            except Exception as e:
-                messages.error(request, f'Erro ao ler o arquivo: {e}')
-                return redirect('importar')
-        except Exception as e:
-            messages.error(request, f'Erro ao ler o arquivo: {e}')
+        rows, colunas, erro = _ler_csv(arquivo)
+        if erro:
+            messages.error(request, erro)
             return redirect('importar')
 
-        df.columns = df.columns.str.strip().str.lower()
         importados, ignorados, erros = 0, 0, []
+
+        def col(row, nome):
+            chave_original = colunas.get(nome)
+            return row.get(chave_original, '').strip() if chave_original else ''
 
         if tipo == 'empresas':
             obrigatorios = ['nome', 'inicio', 'termino', 'cidade']
-            faltando = [c for c in obrigatorios if c not in df.columns]
+            faltando = [c for c in obrigatorios if c not in colunas]
             if faltando:
                 messages.error(request, f'Colunas obrigatórias não encontradas: {", ".join(faltando)}')
                 return redirect('importar')
 
-            for i, row in df.iterrows():
+            for i, row in enumerate(rows, start=2):
                 try:
-                    nome = str(row.get('nome', '')).strip()
-                    if not nome or nome.lower() == 'nan':
+                    nome = col(row, 'nome')
+                    if not nome:
                         ignorados += 1
                         continue
                     if Empresa.objects.filter(nome__iexact=nome).exists():
@@ -151,61 +174,55 @@ def importar_csv(request):
                         continue
                     Empresa.objects.create(
                         nome=nome,
-                        inicio=str(row.get('inicio', '')).strip(),
-                        termino=str(row.get('termino', '')).strip(),
-                        cidade=str(row.get('cidade', '')).strip(),
-                        nome_fantasia=str(row.get('nome_fantasia', '')).strip() if pd.notna(row.get('nome_fantasia')) else '',
-                        cnpj=str(row.get('cnpj', '')).strip() if pd.notna(row.get('cnpj')) else '',
+                        inicio=col(row, 'inicio'),
+                        termino=col(row, 'termino'),
+                        cidade=col(row, 'cidade'),
+                        nome_fantasia=col(row, 'nome_fantasia'),
+                        cnpj=col(row, 'cnpj'),
                     )
                     importados += 1
                 except Exception as e:
-                    erros.append(f'Linha {i + 2}: {e}')
+                    erros.append(f'Linha {i}: {e}')
 
         elif tipo == 'contratos':
             obrigatorios = ['numero', 'tipo', 'objeto', 'fornecedor', 'responsavel', 'valor', 'data_inicio', 'data_fim']
-            faltando = [c for c in obrigatorios if c not in df.columns]
+            faltando = [c for c in obrigatorios if c not in colunas]
             if faltando:
                 messages.error(request, f'Colunas obrigatórias não encontradas: {", ".join(faltando)}')
                 return redirect('importar')
 
-            for i, row in df.iterrows():
+            for i, row in enumerate(rows, start=2):
                 try:
-                    numero = str(row.get('numero', '')).strip()
-                    if not numero or numero.lower() == 'nan':
+                    numero = col(row, 'numero')
+                    if not numero:
                         ignorados += 1
                         continue
                     if Contrato.objects.filter(numero__iexact=numero).exists():
                         ignorados += 1
                         continue
 
-                    data_inicio = pd.to_datetime(row['data_inicio'], dayfirst=True).date()
-                    data_fim = pd.to_datetime(row['data_fim'], dayfirst=True).date()
-
-                    valor_str = str(row['valor']).strip().replace('.', '').replace(',', '.')
-                    valor = float(valor_str)
-
-                    tipo_val = str(row.get('tipo', 'CONTRATO')).strip().upper()
+                    tipo_val = col(row, 'tipo').upper()
                     if tipo_val not in ['CONTRATO', 'CONVENIO']:
                         tipo_val = 'CONTRATO'
 
-                    status_val = str(row.get('status', 'ATIVO')).strip().upper()
+                    status_val = col(row, 'status').upper()
                     if status_val not in ['ATIVO', 'ENCERRADO', 'CANCELADO']:
                         status_val = 'ATIVO'
 
                     Contrato.objects.create(
                         numero=numero,
                         tipo=tipo_val,
-                        objeto=str(row.get('objeto', '')).strip(),
-                        fornecedor=str(row.get('fornecedor', '')).strip(),
-                        responsavel=str(row.get('responsavel', '')).strip(),
-                        valor=valor,
-                        data_inicio=data_inicio,
-                        data_fim=data_fim,
+                        objeto=col(row, 'objeto'),
+                        fornecedor=col(row, 'fornecedor'),
+                        responsavel=col(row, 'responsavel'),
+                        valor=_parse_valor(col(row, 'valor')),
+                        data_inicio=_parse_data(col(row, 'data_inicio')),
+                        data_fim=_parse_data(col(row, 'data_fim')),
                         status=status_val,
                     )
                     importados += 1
                 except Exception as e:
-                    erros.append(f'Linha {i + 2}: {e}')
+                    erros.append(f'Linha {i}: {e}')
 
         else:
             messages.error(request, 'Tipo de importação inválido.')
