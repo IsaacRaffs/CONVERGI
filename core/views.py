@@ -1,12 +1,14 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic.list import ListView
 from django.db.models import Sum
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Empresa, Contrato
+from .forms import ContratoForm
 
 from datetime import date, timedelta
 import csv
@@ -19,6 +21,7 @@ def home(request):
     return render(request, "core/home.html")
 
 
+@login_required
 def listar_empresas(request, empresa_id=None):
         # pega todas as empresas e ordena elas pelo id
         all_empresas = Empresa.objects.all().order_by('id')
@@ -42,7 +45,7 @@ def listar_empresas(request, empresa_id=None):
 
         return render(request, "core/listar_empresas.html", context)
 
-class SearchView(ListView):
+class SearchView(LoginRequiredMixin, ListView):
     model = Empresa
     template_name = 'listar_empresas.html'
     context_object_name = 'empresas'
@@ -55,6 +58,7 @@ class SearchView(ListView):
             return Empresa.objects.filter(nome__icontains=query).order_by('id')
         return Empresa.objects.all().order_by('id')
 
+@login_required
 def Dashboard(request):
     hoje = date.today()
     limite_30_dias = hoje + timedelta(days=30)
@@ -104,6 +108,64 @@ def Dashboard(request):
     }
 
     return render(request, "core/dashboard.html", context)
+
+
+@login_required
+def listar_contratos(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    contratos = Contrato.objects.all().order_by('-criado_em')
+    p = Paginator(contratos, 15)
+    page_number = request.GET.get('page')
+    try:
+        page_obj = p.get_page(page_number)
+    except (PageNotAnInteger, EmptyPage):
+        page_obj = p.page(1)
+    return render(request, 'core/listar_contratos.html', {'page_obj': page_obj, 'contratos': page_obj.object_list})
+
+
+@login_required
+def novo_contrato(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    if request.method == 'POST':
+        form = ContratoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Contrato cadastrado com sucesso.')
+            return redirect('listar_contratos')
+    else:
+        form = ContratoForm()
+    return render(request, 'core/contrato_form.html', {'form': form, 'titulo': 'Novo Contrato', 'acao': 'Cadastrar'})
+
+
+@login_required
+def editar_contrato(request, pk):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    contrato = get_object_or_404(Contrato, pk=pk)
+    if request.method == 'POST':
+        form = ContratoForm(request.POST, instance=contrato)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Contrato {contrato.numero} atualizado.')
+            return redirect('listar_contratos')
+    else:
+        form = ContratoForm(instance=contrato)
+    return render(request, 'core/contrato_form.html', {'form': form, 'titulo': f'Editar — {contrato.numero}', 'acao': 'Salvar Alterações', 'contrato': contrato})
+
+
+@login_required
+def excluir_contrato(request, pk):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    contrato = get_object_or_404(Contrato, pk=pk)
+    if request.method == 'POST':
+        numero = contrato.numero
+        contrato.delete()
+        messages.success(request, f'Contrato {numero} removido.')
+        return redirect('listar_contratos')
+    return render(request, 'core/confirmar_exclusao.html', {'contrato': contrato})
 
 
 def _ler_csv(arquivo):

@@ -1,0 +1,147 @@
+{% extends "core/base.html" %}
+
+{% block title %}CONVERGI — Contratos{% endblock %}
+
+{% block extra_styles %}
+    .page-header {
+        background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-secondary) 100%);
+        padding: 1.75rem 0;
+        margin-bottom: 2rem;
+    }
+    .page-header h4 { color: #fff; font-size: 1.25rem; margin: 0; }
+    .page-header p  { color: rgba(255,255,255,.65); font-size: .83rem; margin: .2rem 0 0; }
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="container-fluid px-4 px-lg-5 d-flex align-items-center justify-content-between">
+        <div>
+            <h4><i class="fa-solid fa-file-contract me-2" style="opacity:.8"></i>Todos os Contratos</h4>
+            <p>Gerenciamento completo do portfólio de contratos e convênios</p>
+        </div>
+        <a href="{% url 'novo_contrato' %}" class="btn-convergi btn" style="font-size:.83rem">
+            <i class="fa-solid fa-plus me-1"></i>Novo Contrato
+        </a>
+    </div>
+</div>
+
+<div class="container-fluid px-4 px-lg-5 pb-5">
+
+    {% if messages %}
+    <div class="mb-3">
+        {% for msg in messages %}
+        <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert"
+             style="font-size:.875rem;border-radius:var(--r-md)">
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-convergi mb-0">
+                    <thead>
+                        <tr>
+                            <th>Número</th>
+                            <th>Tipo</th>
+                            <th>Fornecedor</th>
+                            <th>Responsável</th>
+                            <th>Vencimento</th>
+                            <th>Status</th>
+                            <th>Risco</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contrato in contratos %}
+                        <tr>
+                            <td style="font-weight:600">{{ contrato.numero }}</td>
+                            <td>{{ contrato.get_tipo_display }}</td>
+                            <td>{{ contrato.fornecedor }}</td>
+                            <td>{{ contrato.responsavel }}</td>
+                            <td>
+                                {{ contrato.data_fim|date:"d/m/Y" }}
+                                {% if contrato.esta_vencido %}
+                                <br><small style="color:var(--c-danger);font-size:.72rem">Vencido</small>
+                                {% elif contrato.vencendo_em_30_dias %}
+                                <br><small style="color:var(--c-warning);font-size:.72rem">{{ contrato.dias_para_vencer }}d restantes</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if contrato.status == "ATIVO" %}
+                                    <span class="badge badge-ativo">Ativo</span>
+                                {% elif contrato.status == "ENCERRADO" %}
+                                    <span class="badge badge-encerrado">Encerrado</span>
+                                {% else %}
+                                    <span class="badge badge-cancelado">Cancelado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if contrato.nivel_risco == "Alto" %}
+                                    <span class="badge badge-alto">Alto</span>
+                                {% elif contrato.nivel_risco == "Médio" %}
+                                    <span class="badge badge-medio">Médio</span>
+                                {% else %}
+                                    <span class="badge badge-baixo">Baixo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'editar_contrato' contrato.pk %}"
+                                   class="btn-outline-convergi btn btn-sm">
+                                    <i class="fa-solid fa-pen-to-square me-1"></i>Editar
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <i class="fa-solid fa-file-circle-plus fa-2x mb-2"
+                                   style="color:var(--c-muted);opacity:.4;display:block"></i>
+                                <span class="text-muted" style="font-size:.875rem">
+                                    Nenhum contrato cadastrado.
+                                    <a href="{% url 'novo_contrato' %}" style="color:var(--c-primary)">Cadastrar agora</a>
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if page_obj.has_other_pages %}
+            <div class="d-flex justify-content-center py-3" style="border-top:1px solid var(--c-border)">
+                <nav>
+                    <ul class="pagination mb-0">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                <i class="fa-solid fa-chevron-left" style="font-size:.7rem"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endfor %}
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                <i class="fa-solid fa-chevron-right" style="font-size:.7rem"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

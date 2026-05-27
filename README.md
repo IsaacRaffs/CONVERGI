@@ -15,8 +15,8 @@ A CONVERGI é uma plataforma web desenvolvida em Django para o monitoramento de 
 
     1ª) Criar: python -m venv env 
     2ª) Ativar:
-        windows -> . .\env\Scripts\activate
-        linux -> source ./env/Scripts/activate
+        windows -> .\env\Scripts\activate
+        linux -> source env/bin/activate
 
 5º Depoi de criar e ativar o env, devemos instalar as dependências necessarias para o funcionamento
 do programa. 
